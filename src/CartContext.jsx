@@ -1,14 +1,12 @@
 import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 
-// IMPORTANT: Replace with your actual Stripe Publishable Key
-const STRIPE_PUBLISHABLE_KEY = 'pk_test_YOUR_PUBLISHABLE_KEY'; 
+const STRIPE_PUBLISHABLE_KEY = 'pk_test_51RersQBTFrZCx0w8b8RSt0aguVIJt71xwSkVLfsEZiI2xUadPACzOcE7mfkVDciY4ubAfXqMF79Htontosr2scqD00uhaqfe1Q'; 
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 // Create the Context
 export const CartContext = createContext();
 
-// Create a custom hook for easy access to cart functions
 export const useCart = () => {
   return useContext(CartContext);
 };
