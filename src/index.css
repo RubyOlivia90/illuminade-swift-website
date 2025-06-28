@@ -1,3 +1,187 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* index.css */
+
+/* --- Font Imports --- */
+@import url('https://fonts.googleapis.com/css2?family=Caveat&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond&display=swap');
+
+/* --- Base Global Styles --- */
+body {
+  margin: 0;
+  font-family: 'Helvetica Neue', sans-serif;
+  
+  /* Full homepage background image with transparent overlay */
+  /* New photo (_MG_1968.JPG) added with a transparent overlay */
+  background-image: 
+    linear-gradient(rgba(100, 200, 100, 0.4), rgba(150, 255, 150, 0.4)), /* Lighter green gradient with reduced opacity */
+    linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), /* Transparent black overlay for the new photo (reduced opacity for less darkness) */
+    url('/_MG_1968.JPG'), /* The new photo */
+    url('/grassforlu.jfif'); /* Original grass photo, now underneath */
+  
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat; /* One repeat setting for each layer */
+  background-position: center center, center center, center center, center center; /* One position setting for each layer */
+  background-attachment: fixed, fixed, fixed, fixed; /* One attachment setting for each layer */
+  background-size: cover, cover, cover, cover; /* One size setting for each layer */
+  
+  color: #f0f0f0; /* Changed font color to a very light grey for better legibility */
+}
+
+/* Headings styles */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Cormorant Garamond', serif;
+  color: #f0f0f0; /* Changed heading color to a very light grey */
+  margin: 0;
+}
+
+/* Header Title (if distinct from h1) */
+.header-title {
+  font-family: 'Caveat', cursive;
+  font-weight: 700;
+  font-size: 4rem;
+  color: #f0f0f0; /* Changed header title color to a very light grey */
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Adjusted text shadow for better contrast */
+}
+
+/* Global Link Styles (basic reset) */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Image base styles */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Generic container for page sections */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* --- Homepage Specific Sections --- */
+.home-page-wrapper {
+    /* If you need any specific styling for the very top-level div of your Home component, put it here */
+    /* For instance, to ensure content doesn't go under fixed navbar */
+    padding-top: 80px; /* Adjust based on your actual navbar height */
+}
+
+/* Hero Header Section */
+.hero-header {
+  position: relative;
+  height: 60vh;
+  /* background-image is handled dynamically from Strapi in Home.jsx */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white; /* Kept hero header text white */
+  font-family: 'Caveat', cursive;
+  text-align: center;
+  padding: 0 1rem;
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.hero-header .overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+.hero-title {
+  font-size: 4rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.hero-subtitle {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+/* General container for home content */
+.home-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  text-align: center;
+  font-family: 'Helvetica Neue', sans-serif;
+  color: #f0f0f0; /* Changed container font color to a very light grey */
+}
+
+/* About Section specific styles */
+.about-section {
+  max-width: 900px; /* Redundant if inheriting from .home-container, but harmless */
+  margin: 2rem auto; /* Redundant if inheriting from .home-container, but harmless */
+  padding: 1rem;
+  font-family: 'Quicksand', sans-serif;
+  color: #f0f0f0; /* Changed about section font color to a very light grey */
+  text-align: center;
+}
+
+.about-section h2 {
+  font-family: 'Caveat', cursive;
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.home-container .home-about h2,
+.home-container .home-photos h2 { /* Kept for forward compatibility if you add .home-photos back */
+  font-family: 'Helvetica Neue', sans-serif;
+  font-weight: bold;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #f0f0f0; /* Changed these specific heading colors to a very light grey */
+}
+
+.home-container .home-about p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* --- Global Form and Button Styles (moved here from Navbar.css) --- */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+input, textarea {
+  padding: 0.5rem;
+  font-size: 1rem;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  background-color: #a8e6cf;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: 5px;
+  color: #064420;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #82c9a8;
+}

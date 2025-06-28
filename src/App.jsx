@@ -1,24 +1,29 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Navbar from './components/Navbar';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
-import About from './pages/About';
 import Gallery from './pages/Gallery';
 import Store from './pages/Store';
-import Checkout from './pages/Checkout';
 import Contact from './pages/Contact';
+import Checkout from './pages/Checkout';
+import Navbar from './components/Navbar';
 
-export default function App() {
+const App = () => {
   return (
-    <BrowserRouter>
+    <Router>
       <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/gallery" element={<Gallery />} />
-        <Route path="/store" element={<Store />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/contact" element={<Contact />} />
-      </Routes>
-    </BrowserRouter>
+      {/* Add padding-top to the main content area to prevent it from going under the fixed navbar */}
+      {/* 5rem is a good starting point, adjust if your navbar is taller/shorter */}
+      <main style={{ paddingTop: '5rem' }}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/gallery" element={<Gallery />} />
+          <Route path="/store" element={<Store />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/checkout" element={<Checkout />} />
+        </Routes>
+      </main>
+    </Router>
   );
-}
+};
+
+export default App;
