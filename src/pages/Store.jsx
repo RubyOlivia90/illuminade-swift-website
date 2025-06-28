@@ -1,18 +1,21 @@
+// After
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useCart } from '../CartContext'; // Import the useCart hook
 
 // IMPORTANT: Replace with your actual Strapi API URL (e.g., 'http://localhost:1337')
 const STRAPI_API_URL = 'http://localhost:1337'; 
 
 // Strapi Collection/Single Type names for the Store
-const PRODUCTS_COLLECTION = 'products'; // API Key for your products
-const STORE_TEXTS_COLLECTION = 'store-texts'; // API Key for your store page text
+const PRODUCTS_COLLECTION = 'products'; 
+const STORE_TEXTS_COLLECTION = 'store-texts'; 
 
 function Store() {
   const [products, setProducts] = useState([]);
   const [storePageContent, setStorePageContent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { addToCart } = useCart(); // Get addToCart from cart context
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,11 +38,10 @@ function Store() {
                 description: 'No description provided (Fallback).',
                 price: 'N/A', 
                 stripeProductId: 'N/A',
-                imageUrl: 'https://placehold.co/600x400/FF0000/FFFFFF?text=No+Product+Image' // Default fallback image
+                imageUrl: 'https://placehold.co/600x400/FF0000/FFFFFF?text=No+Product+Image' 
             };
             
             try {
-                // Strapi v4+ usually wraps attributes, but we'll use item directly if not present
                 const sourceData = item.attributes || item; 
 
                 console.log("--- Processing Product Item ---");
@@ -47,10 +49,8 @@ function Store() {
                 console.log("Source data for product properties (Title, Description, Price, StripeProductID, ProductImage):", sourceData); 
                 console.log("All top-level keys in sourceData:", Object.keys(sourceData)); 
 
-                // Access Title
                 processedItem.title = sourceData.Title || sourceData.title || 'Untitled Product'; 
                 
-                // Handle Description (Rich Text)
                 if (Array.isArray(sourceData.Description) && sourceData.Description.length > 0) {
                     processedItem.description = sourceData.Description
                         .map(block => {
@@ -65,33 +65,26 @@ function Store() {
                     processedItem.description = sourceData.Description || sourceData.description || 'No description provided.';
                 }
 
-                // Handle Price
                 if (sourceData.Price !== undefined && sourceData.Price !== null) {
                     processedItem.price = parseFloat(sourceData.Price).toFixed(2);
-                } else if (sourceData.price !== undefined && sourceData.price !== null) { // Check lowercase 'price'
+                } else if (sourceData.price !== undefined && sourceData.price !== null) { 
                     processedItem.price = parseFloat(sourceData.price).toFixed(2);
                 } else {
                     console.warn("Price field not found or is null/undefined for product:", item.id);
                 }
 
-                // Handle StripeProductID
                 processedItem.stripeProductId = sourceData.StripeProductID || sourceData.stripeProductId || 'N/A';
 
-
-                // --- ProductImage URL parsing ---
-                // CRITICAL FIX: Handle ProductImage being an array
                 console.log("Raw sourceData.ProductImage object:", sourceData.ProductImage); 
                 
                 let foundImageUrl = false;
                 let productImageData = sourceData.ProductImage;
 
-                // If ProductImage is an array, take the first element
                 if (Array.isArray(productImageData) && productImageData.length > 0) {
                     productImageData = productImageData[0];
                     console.log("ProductImage is an array, taking first element:", productImageData);
                 }
 
-                // Attempt 1: Standard Strapi v4/v5 nested structure: ProductImage.data.attributes.url
                 if (productImageData && productImageData.data) {
                     if (productImageData.data.attributes && productImageData.data.attributes.url) {
                         processedItem.imageUrl = `${STRAPI_API_URL}${productImageData.data.attributes.url}`;
@@ -99,14 +92,12 @@ function Store() {
                         foundImageUrl = true;
                     }
                 } 
-                // Attempt 2: Direct URL on the ProductImage object itself
                 if (!foundImageUrl && productImageData && typeof productImageData === 'object' && productImageData.url) { 
                     processedItem.imageUrl = `${STRAPI_API_URL}${productImageData.url}`;
                     console.log("Product Image found: Direct URL on ProductImage object (ProductImage.url)", processedItem.imageUrl);
                     foundImageUrl = true;
                 }
                 
-                // Final fallback if no image URL was found
                 if (!foundImageUrl) {
                     console.warn("Could not find product image URL after all attempts for item:", item);
                     processedItem.imageUrl = 'https://placehold.co/600x400/CCCCCC/333333?text=No+Product+Image'; 
@@ -137,13 +128,11 @@ function Store() {
 
         console.log("Raw response for Store Text API:", textResponse.data);
 
-        // MODIFIED: Access the first element of the data.data array
         if (textResponse.data && Array.isArray(textResponse.data.data) && textResponse.data.data.length > 0) { 
           const pageContentEntry = textResponse.data.data[0]; 
           
           console.log("Store Text pageContentEntry (first item from array):", pageContentEntry);
-          console.log("Store Text pageContentEntry.attributes:", pageContentEntry.attributes); // Should now be undefined based on your logs
-          // NEW CONSOLE LOGS for direct access
+          console.log("Store Text pageContentEntry.attributes:", pageContentEntry.attributes); 
           console.log("Store Text pageContentEntry.Title (direct):", pageContentEntry.Title);
           console.log("Store Text pageContentEntry.Body (direct):", pageContentEntry.Body);
 
@@ -151,20 +140,19 @@ function Store() {
           let pageTitle = 'Our Store';
           let pageBody = 'Welcome to our store. Find unique items here!';
 
-          // CRITICAL FIX: Prioritize direct access, then check attributes (though direct should now work)
-          if (pageContentEntry.Title) { // Direct capitalized 'Title'
+          if (pageContentEntry.Title) { 
               pageTitle = pageContentEntry.Title;
-          } else if (pageContentEntry.title) { // Direct lowercase 'title'
+          } else if (pageContentEntry.title) { 
               pageTitle = pageContentEntry.title;
-          } else if (pageContentEntry.attributes && pageContentEntry.attributes.Title) { // Nested capitalized 'Title'
+          } else if (pageContentEntry.attributes && pageContentEntry.attributes.Title) { 
               pageTitle = pageContentEntry.attributes.Title;
-          } else if (pageContentEntry.attributes && pageContentEntry.attributes.title) { // Nested lowercase 'title'
+          } else if (pageContentEntry.attributes && pageContentEntry.attributes.title) { 
               pageTitle = pageContentEntry.attributes.title;
           }
 
-          const rawBody = pageContentEntry.Body || pageContentEntry.body || // Direct capitalized/lowercase
-                          (pageContentEntry.attributes && pageContentEntry.attributes.Body) || // Nested capitalized
-                          (pageContentEntry.attributes && pageContentEntry.attributes.body); // Nested lowercase
+          const rawBody = pageContentEntry.Body || pageContentEntry.body || 
+                          (pageContentEntry.attributes && pageContentEntry.attributes.Body) || 
+                          (pageContentEntry.attributes && pageContentEntry.attributes.body); 
 
           if (Array.isArray(rawBody) && rawBody.length > 0) {
               pageBody = rawBody
@@ -271,7 +259,7 @@ function Store() {
               <div className="store-card-price">
                 {product.price !== 'N/A' ? `$${product.price}` : 'Price: N/A'}
               </div>
-              <button className="store-add-to-cart-button">
+              <button onClick={() => addToCart(product)} className="store-add-to-cart-button">
                 Add to Cart
               </button>
             </div>

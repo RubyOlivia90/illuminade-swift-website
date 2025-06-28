@@ -1,3 +1,4 @@
+/* After (add this at the end of the file) */
 /* index.css */
 
 /* --- Font Imports --- */
@@ -13,23 +14,23 @@ body {
   /* Full homepage background image with transparent overlay */
   /* New photo (_MG_1968.JPG) added with a transparent overlay */
   background-image: 
-    linear-gradient(rgba(100, 200, 100, 0.4), rgba(150, 255, 150, 0.4)), /* Lighter green gradient with reduced opacity */
-    linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), /* Transparent black overlay for the new photo (reduced opacity for less darkness) */
-    url('/_MG_1968.JPG'), /* The new photo */
-    url('/grassforlu.jfif'); /* Original grass photo, now underneath */
+    linear-gradient(rgba(100, 200, 100, 0.4), rgba(150, 255, 150, 0.4)), 
+    linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), 
+    url('/_MG_1968.JPG'), 
+    url('/grassforlu.jfif'); 
   
-  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat; /* One repeat setting for each layer */
-  background-position: center center, center center, center center, center center; /* One position setting for each layer */
-  background-attachment: fixed, fixed, fixed, fixed; /* One attachment setting for each layer */
-  background-size: cover, cover, cover, cover; /* One size setting for each layer */
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat; 
+  background-position: center center, center center, center center, center center; 
+  background-attachment: fixed, fixed, fixed, fixed; 
+  background-size: cover, cover, cover, cover; 
   
-  color: #f0f0f0; /* Changed font color to a very light grey for better legibility */
+  color: #f0f0f0; 
 }
 
 /* Headings styles */
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Cormorant Garamond', serif;
-  color: #f0f0f0; /* Changed heading color to a very light grey */
+  color: #f0f0f0; 
   margin: 0;
 }
 
@@ -38,8 +39,8 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'Caveat', cursive;
   font-weight: 700;
   font-size: 4rem;
-  color: #f0f0f0; /* Changed header title color to a very light grey */
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Adjusted text shadow for better contrast */
+  color: #f0f0f0; 
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.5); 
 }
 
 /* Global Link Styles (basic reset) */
@@ -64,23 +65,20 @@ img {
 
 /* --- Homepage Specific Sections --- */
 .home-page-wrapper {
-    /* If you need any specific styling for the very top-level div of your Home component, put it here */
-    /* For instance, to ensure content doesn't go under fixed navbar */
-    padding-top: 80px; /* Adjust based on your actual navbar height */
+    padding-top: 80px; 
 }
 
 /* Hero Header Section */
 .hero-header {
   position: relative;
   height: 60vh;
-  /* background-image is handled dynamically from Strapi in Home.jsx */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white; /* Kept hero header text white */
+  color: white; 
   font-family: 'Caveat', cursive;
   text-align: center;
   padding: 0 1rem;
@@ -121,16 +119,16 @@ img {
   margin: 2rem auto;
   text-align: center;
   font-family: 'Helvetica Neue', sans-serif;
-  color: #f0f0f0; /* Changed container font color to a very light grey */
+  color: #f0f0f0; 
 }
 
 /* About Section specific styles */
 .about-section {
-  max-width: 900px; /* Redundant if inheriting from .home-container, but harmless */
-  margin: 2rem auto; /* Redundant if inheriting from .home-container, but harmless */
+  max-width: 900px; 
+  margin: 2rem auto; 
   padding: 1rem;
   font-family: 'Quicksand', sans-serif;
-  color: #f0f0f0; /* Changed about section font color to a very light grey */
+  color: #f0f0f0; 
   text-align: center;
 }
 
@@ -141,12 +139,12 @@ img {
 }
 
 .home-container .home-about h2,
-.home-container .home-photos h2 { /* Kept for forward compatibility if you add .home-photos back */
+.home-container .home-photos h2 { 
   font-family: 'Helvetica Neue', sans-serif;
   font-weight: bold;
   font-size: 2rem;
   margin-bottom: 1rem;
-  color: #f0f0f0; /* Changed these specific heading colors to a very light grey */
+  color: #f0f0f0; 
 }
 
 .home-container .home-about p {
@@ -184,4 +182,54 @@ button {
 
 button:hover {
   background-color: #82c9a8;
+}
+
+/* --- Footer Styles --- */
+.footer {
+  background-color: rgba(250, 171, 193, 0.85); /* Matches navbar background */
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: #064420; /* Matches navbar text color */
+  padding: 1.5rem 2rem;
+  text-align: center;
+  font-family: 'Quicksand', sans-serif;
+  font-size: 0.9rem;
+  margin-top: 3rem; /* Space above the footer */
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08); /* Shadow at the top */
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.footer-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.footer-links a {
+  color: #064420;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: #032e18;
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 1rem;
+  }
+  .footer-links {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 }

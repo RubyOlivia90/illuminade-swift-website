@@ -1,3 +1,4 @@
+/* After */
 /* Navbar.css */
 
 /* --- Font Import (only if Caveat is specifically used here and not globally elsewhere) --- */
@@ -122,4 +123,22 @@
   background-color: #064420;
   border-radius: 5px;
   transition: all 0.3s ease-in-out;
+}
+
+/* New styles for cart link and icon */
+.navbar-links .cart-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* Space between icon and text */
+}
+
+.navbar-links .cart-icon {
+  width: 1.5rem; /* Adjust icon size as needed */
+  height: 1.5rem;
+  fill: #064420; /* Icon color, matches link color */
+  transition: fill 0.3s ease;
+}
+
+.navbar-links .cart-link:hover .cart-icon {
+  fill: #032e18; /* Change icon color on hover */
 }

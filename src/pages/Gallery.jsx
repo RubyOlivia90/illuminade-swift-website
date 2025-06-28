@@ -1,18 +1,21 @@
+// After
 import React, { useState, useEffect } from 'react';
-import axios from 'axios'; // Using axios for consistency with your Home.jsx
+import axios from 'axios';
+import { useCart } from '../CartContext'; // Import the useCart hook
 
 // IMPORTANT: Replace with your actual Strapi API URL (e.g., 'http://localhost:1337')
 const STRAPI_API_URL = 'http://localhost:1337'; 
 
 // Strapi Collection/Single Type names
 const GALLERY_ITEMS_COLLECTION = 'gallery-items'; 
-const GALLERY_TEXTS_COLLECTION = 'gallery-texts'; // Confirmed as a Collection Type
+const GALLERY_TEXTS_COLLECTION = 'gallery-texts'; 
 
 function Gallery() {
   const [photos, setPhotos] = useState([]);
   const [galleryPageContent, setGalleryPageContent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { addToCart } = useCart(); // Get addToCart from cart context
 
   useEffect(() => {
     const fetchData = async () => {
@@ -33,12 +36,11 @@ function Gallery() {
                 id: item.id,
                 title: 'Untitled Photo (Fallback)', 
                 description: 'No description provided (Fallback).',
-                imageUrl: 'https://placehold.co/600x400/FF0000/FFFFFF?text=No+Image+Found', // Default fallback image
+                imageUrl: 'https://placehold.co/600x400/FF0000/FFFFFF?text=No+Image+Found', 
                 price: 'N/A' 
             };
             
             try {
-                // Determine if attributes are nested or direct (your console logs indicated direct for gallery items)
                 const sourceData = item.attributes || item; 
 
                 console.log("--- Processing Gallery Item ---");
@@ -46,10 +48,8 @@ function Gallery() {
                 console.log("Source data for item properties (Title, Description, Image/Price):", sourceData); 
                 console.log("All top-level keys in sourceData:", Object.keys(sourceData)); 
 
-                // Access Title (capitalized) directly from sourceData
                 processedItem.title = sourceData.Title || 'Untitled Photo'; 
                 
-                // Handle Description: If it's a rich text array, extract the text. Otherwise, use as-is.
                 if (Array.isArray(sourceData.Description) && sourceData.Description.length > 0) {
                     processedItem.description = sourceData.Description
                         .map(block => {
@@ -64,22 +64,17 @@ function Gallery() {
                     processedItem.description = sourceData.Description || 'No description provided.';
                 }
 
-                // Handle Price: Check for a 'Price' field (case-sensitive)
                 if (sourceData.Price !== undefined && sourceData.Price !== null) {
                     processedItem.price = parseFloat(sourceData.Price).toFixed(2);
                 } else {
                     console.warn("Price field not found or is null/undefined for item:", item.id);
                 }
 
-
-                // --- Image URL parsing ---
-                // We've confirmed 'Image' (capital I) is the field name and it might be null.
                 console.log("Raw sourceData.Image object:", sourceData.Image); 
                 
                 let foundImageUrl = false;
-                // Attempt 1: Standard Strapi v4/v5 nested structure: Image.data.attributes.url
                 if (sourceData.Image && sourceData.Image.data) {
-                    if (!Array.isArray(sourceData.Image.data)) { // Single image
+                    if (!Array.isArray(sourceData.Image.data)) { 
                         if (sourceData.Image.data.attributes && sourceData.Image.data.attributes.url) {
                             processedItem.imageUrl = `${STRAPI_API_URL}${sourceData.Image.data.attributes.url}`;
                             console.log("Image found: Standard nested path (Image.data.attributes.url)", processedItem.imageUrl);
@@ -87,20 +82,18 @@ function Gallery() {
                         }
                     } else if (Array.isArray(sourceData.Image.data) && sourceData.Image.data.length > 0 && 
                                sourceData.Image.data[0].attributes && 
-                               sourceData.Image.data[0].attributes.url) { // Multiple images, take first
+                               sourceData.Image.data[0].attributes.url) { 
                         processedItem.imageUrl = `${STRAPI_API_URL}${sourceData.Image.data[0].attributes.url}`;
                         console.log("Image found: Standard nested path (Image.data[0].attributes.url)", processedItem.imageUrl);
                         foundImageUrl = true;
                     }
                 } 
-                // Attempt 2: Direct URL on the Image object itself (older Strapi versions or certain populate configurations)
                 if (!foundImageUrl && sourceData.Image && typeof sourceData.Image === 'object' && sourceData.Image.url) { 
                     processedItem.imageUrl = `${STRAPI_API_URL}${sourceData.Image.url}`;
                     console.log("Image found: Direct URL on Image object (Image.url)", processedItem.imageUrl);
                     foundImageUrl = true;
                 }
                 
-                // Final fallback if no image URL was found through any method
                 if (!foundImageUrl) {
                     console.warn("Could not find image URL after all attempts for item:", item);
                     processedItem.imageUrl = 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image+Found'; 
@@ -131,12 +124,10 @@ function Gallery() {
 
         console.log("Raw response for Gallery Text API:", textResponse.data);
 
-        // MODIFIED: Access the first element of the data.data array
         if (textResponse.data && Array.isArray(textResponse.data.data) && textResponse.data.data.length > 0) { 
-          const pageContentEntry = textResponse.data.data[0]; // Get the actual entry from the array
+          const pageContentEntry = textResponse.data.data[0]; 
           
           console.log("Gallery Text pageContentEntry (first item from array):", pageContentEntry);
-          // NEW: Log attributes and direct properties for debugging
           console.log("Gallery Text pageContentEntry.attributes:", pageContentEntry.attributes);
           console.log("Gallery Text pageContentEntry.Title (direct):", pageContentEntry.Title);
           console.log("Gallery Text pageContentEntry.Body (direct):", pageContentEntry.Body);
@@ -144,20 +135,19 @@ function Gallery() {
           let pageTitle = 'Our Gallery';
           let pageBody = 'Add page description in Strapi.';
 
-          // NEW LOGIC: Prioritize direct properties, then check attributes
-          if (pageContentEntry.Title) { // Direct capitalized 'Title'
+          if (pageContentEntry.Title) { 
               pageTitle = pageContentEntry.Title;
-          } else if (pageContentEntry.title) { // Direct lowercase 'title'
+          } else if (pageContentEntry.title) { 
               pageTitle = pageContentEntry.title;
-          } else if (pageContentEntry.attributes && pageContentEntry.attributes.Title) { // Nested capitalized 'Title'
+          } else if (pageContentEntry.attributes && pageContentEntry.attributes.Title) { 
               pageTitle = pageContentEntry.attributes.Title;
-          } else if (pageContentEntry.attributes && pageContentEntry.attributes.title) { // Nested lowercase 'title'
+          } else if (pageContentEntry.attributes && pageContentEntry.attributes.title) { 
               pageTitle = pageContentEntry.attributes.title;
           }
 
-          const rawBody = pageContentEntry.Body || pageContentEntry.body || // Direct capitalized/lowercase
-                          (pageContentEntry.attributes && pageContentEntry.attributes.Body) || // Nested capitalized
-                          (pageContentEntry.attributes && pageContentEntry.attributes.body); // Nested lowercase
+          const rawBody = pageContentEntry.Body || pageContentEntry.body || 
+                          (pageContentEntry.attributes && pageContentEntry.attributes.Body) || 
+                          (pageContentEntry.attributes && pageContentEntry.attributes.body); 
 
           if (Array.isArray(rawBody) && rawBody.length > 0) {
               pageBody = rawBody
@@ -265,7 +255,7 @@ function Gallery() {
               <div className="gallery-card-price">
                 {photo.price !== 'N/A' ? `$${photo.price}` : 'Price: N/A'}
               </div>
-              <button className="gallery-add-to-cart-button">
+              <button onClick={() => addToCart(photo)} className="gallery-add-to-cart-button">
                 Add to Cart
               </button>
             </div>
@@ -297,13 +287,13 @@ function Gallery() {
           }
 
           .gallery-container {
-            width: 90%; /* Fluid width for full scaling */
-            max-width: 1280px; /* Increased max-width for very large screens to look sleeker */
-            margin: 0 auto; /* Ensures centering */
-            padding: 1.5rem 1rem; /* Top/bottom, left/right padding */
-            padding-top: 5rem; /* Adjusted to clear potential fixed header */
+            width: 90%; 
+            max-width: 1280px; 
+            margin: 0 auto; 
+            padding: 1.5rem 1rem; 
+            padding-top: 5rem; 
             padding-bottom: 2rem;
-            box-sizing: border-box; /* Include padding in element's total width/height */
+            box-sizing: border-box; 
             font-family: 'Helvetica Neue', sans-serif;
           }
 
@@ -315,7 +305,7 @@ function Gallery() {
           }
 
           .gallery-title {
-            font-size: 2.8rem; /* Adjusted for prominence */
+            font-size: 2.8rem; 
             font-weight: 800;
             text-align: center;
             margin-bottom: 0.8rem; 
@@ -327,8 +317,8 @@ function Gallery() {
             text-align: center;
             color: #f0f0f0;
             font-size: 1rem; 
-            margin-bottom: 2.5rem; /* Space between page body and grid */
-            max-width: 700px; /* Adjusted max-width for page body text */
+            margin-bottom: 2.5rem; 
+            max-width: 700px; 
             margin-left: auto;
             margin-right: auto;
             font-family: 'Quicksand', sans-serif;
@@ -344,33 +334,33 @@ function Gallery() {
 
           .gallery-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); /* Increased min-width for larger, sleeker cards */
-            gap: 1.5rem; /* Adjusted gap between cards */
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+            gap: 1.5rem; 
           }
 
           @media (min-width: 640px) { 
             .gallery-grid {
-              grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Larger min-width for 2-column on wider phones */
+              grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
             }
           }
 
           @media (min-width: 768px) { 
             .gallery-grid {
-              grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Allow 3-4 columns on tablets */
+              grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
             }
           }
 
           @media (min-width: 1024px) { 
             .gallery-grid {
-              grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Ensure 4-5 columns on larger screens */
+              grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
             }
           }
 
           .gallery-card {
             background-color: #ffffff;
-            padding: 0.9rem; /* Adjusted padding for card content */
-            border-radius: 0.8rem; /* Slightly larger border radius */
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* Refined shadow */
+            padding: 0.9rem; 
+            border-radius: 0.8rem; 
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); 
             transition: all 0.3s ease-in-out; 
             display: flex;
             flex-direction: column;
@@ -379,8 +369,8 @@ function Gallery() {
           }
 
           .gallery-card:hover {
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15); /* More subtle hover shadow */
-            transform: translateY(-0.15rem); /* Slight lift on hover */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15); 
+            transform: translateY(-0.15rem); 
           }
 
           .gallery-image-wrapper {
@@ -388,7 +378,7 @@ function Gallery() {
             border-radius: 0.6rem; 
             margin-bottom: 0.8rem; 
             width: 100%; 
-            padding-top: 60%; /* Adjusted aspect ratio (closer to 16:9, less height) */
+            padding-top: 60%; 
             position: relative; 
             background-color: #f0f0f0; 
           }
@@ -399,7 +389,7 @@ function Gallery() {
             left: 0;
             width: 100%;
             height: 100%; 
-            object-fit: contain; /* Ensures the whole image is visible */
+            object-fit: contain; 
             border-radius: 0.6rem;
             transition: transform 0.3s ease-in-out; 
           }
@@ -409,7 +399,7 @@ function Gallery() {
           }
 
           .gallery-card-title {
-            font-size: 1.2rem; /* Adjusted title font size */
+            font-size: 1.2rem; 
             font-weight: bold;
             color: #1f2937;
             margin-bottom: 0.3rem; 
@@ -418,7 +408,7 @@ function Gallery() {
 
           .gallery-card-description {
             color: #4b5563;
-            font-size: 0.8rem; /* Adjusted description font size */
+            font-size: 0.8rem; 
             flex-grow: 1;
             margin-bottom: 0.8rem;
             font-family: 'Quicksand', sans-serif;
@@ -428,7 +418,7 @@ function Gallery() {
           }
           
           .gallery-card-price {
-            font-size: 1.3rem; /* Adjusted price font size */
+            font-size: 1.3rem; 
             font-weight: bold;
             color: #064420;
             margin-bottom: 1rem; 
@@ -470,13 +460,13 @@ function Gallery() {
             }
             .gallery-grid {
               gap: 1rem;
-              grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Mobile: 2 columns */
+              grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
             }
             .gallery-card {
               padding: 0.7rem;
             }
             .gallery-image-wrapper {
-              padding-top: 65%; /* Consistent aspect ratio on mobile */
+              padding-top: 65%; 
             }
           }
         `}

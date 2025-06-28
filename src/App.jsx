@@ -6,13 +6,12 @@ import Store from './pages/Store';
 import Contact from './pages/Contact';
 import Checkout from './pages/Checkout';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer'; // Import the new Footer component
 
 const App = () => {
   return (
     <Router>
       <Navbar />
-      {/* Add padding-top to the main content area to prevent it from going under the fixed navbar */}
-      {/* 5rem is a good starting point, adjust if your navbar is taller/shorter */}
       <main style={{ paddingTop: '5rem' }}>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -22,6 +21,7 @@ const App = () => {
           <Route path="/checkout" element={<Checkout />} />
         </Routes>
       </main>
+      <Footer /> {/* Add the Footer component here */}
     </Router>
   );
 };
