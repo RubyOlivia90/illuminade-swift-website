@@ -1,12 +1,11 @@
-// After
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useCart } from '../CartContext'; // Import the useCart hook
+import { useCart } from '../CartContext'; 
 
-// IMPORTANT: Replace with your actual Strapi API URL (e.g., 'http://localhost:1337')
+
 const STRAPI_API_URL = 'http://localhost:1337'; 
 
-// Strapi Collection/Single Type names
 const GALLERY_ITEMS_COLLECTION = 'gallery-items'; 
 const GALLERY_TEXTS_COLLECTION = 'gallery-texts'; 
 
@@ -23,7 +22,6 @@ function Gallery() {
       setError(null);
 
       try {
-        // --- Fetch Gallery Items (Individual Photos) ---
         const itemsApiUrl = `${STRAPI_API_URL}/api/${GALLERY_ITEMS_COLLECTION}?populate=*`;
         console.log(`Attempting to fetch gallery items from: ${itemsApiUrl}`);
         const itemsResponse = await axios.get(itemsApiUrl); 
@@ -117,7 +115,7 @@ function Gallery() {
           setError('No gallery item entries found or published in Strapi, or unexpected data format from API.');
         }
 
-        // --- Fetch Gallery Page Text (Collection Type, taking the first entry) ---
+       
         const textApiUrl = `${STRAPI_API_URL}/api/${GALLERY_TEXTS_COLLECTION}?populate=*`;
         console.log(`Attempting to fetch gallery page text from: ${textApiUrl}`);
         const textResponse = await axios.get(textApiUrl);
@@ -210,7 +208,6 @@ function Gallery() {
 
   return (
     <div className="gallery-container">
-      {/* Display Gallery Page Title and Body */}
       {galleryPageContent ? (
         <>
           <h1 className="gallery-title">
@@ -221,14 +218,14 @@ function Gallery() {
           </p>
         </>
       ) : (
-        // Fallback for page content if it's not loaded yet
+       
         <>
           <h1 className="gallery-title">Our Gallery</h1>
           <p className="gallery-page-body" style={{ whiteSpace: 'pre-line' }}>Loading page description...</p>
         </>
       )}
       
-      {/* Display Gallery Items */}
+    
       {photos.length === 0 ? (
         <p className="gallery-empty-message">No photos found in the gallery. Please add some in Strapi!</p>
       ) : (
@@ -239,7 +236,6 @@ function Gallery() {
               className="gallery-card"
             >
               <div className="gallery-image-wrapper">
-                {/* Image sizing and fitting */}
                 <img 
                   src={photo.imageUrl} 
                   alt={photo.title} 
@@ -263,7 +259,6 @@ function Gallery() {
         </div>
       )}
 
-      {/* Internal CSS for the Gallery component */}
       <style>
         {`
           /* Basic container for loading/error messages */
