@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 
-const STRIPE_PUBLISHABLE_KEY = 'pk_test_51RersQBTFrZCx0w8b8RSt0aguVIJt71xwSkVLfsEZiI2xUadPACzOcE7mfkVDciY4ubAfXqMF79Htontosr2scqD00uhaqfe1Q'; 
+const STRIPE_PUBLISHABLE_KEY = 'pk_test_51RhxDPIDsQ9cJjG5L7qvEPejIpP1FAfpTUNO4wMMxr9YFj6l1N2vCiv02GW7r1AYk8zEC9wXGvaZHwb1qGqHiaXT00gJ7NiwYg'; 
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 // Create the Context
