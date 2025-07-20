@@ -21,7 +21,7 @@ const App = () => {
           <Route path="/checkout" element={<Checkout />} />
         </Routes>
       </main>
-      <Footer /> {/* Add the Footer component here */}
+      <Footer /> {[]}
     </Router>
   );
 };

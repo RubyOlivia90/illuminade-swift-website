@@ -1,7 +1,8 @@
 import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 
-const STRIPE_PUBLISHABLE_KEY = 'pk_test_51RhxDPIDsQ9cJjG5L7qvEPejIpP1FAfpTUNO4wMMxr9YFj6l1N2vCiv02GW7r1AYk8zEC9wXGvaZHwb1qGqHiaXT00gJ7NiwYg'; 
+// Define your Stripe Publishable Key
+const STRIPE_PUBLISHABLE_KEY = 'pk_test_51RhxDPIDsQ9cJjG5L7qvEPejIpP1FAfpTUNO4wMMxr9YFj6l1N2vCiv02GW7r1AYk8zEC9wXGvaZHwb1qGqHiaXT00gJ7NiwYg';
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 // Create the Context
@@ -22,7 +23,6 @@ export const CartProvider = ({ children }) => {
     }
   });
 
-  // Effect to save cart items to localStorage whenever they change
   useEffect(() => {
     try {
       localStorage.setItem('cartItems', JSON.stringify(cartItems));
@@ -31,7 +31,6 @@ export const CartProvider = ({ children }) => {
     }
   }, [cartItems]);
 
-  // --- Cart Management Functions ---
   const addToCart = useCallback((productToAdd) => {
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === productToAdd.id);
@@ -42,9 +41,8 @@ export const CartProvider = ({ children }) => {
             : item
         );
       } else {
-        // Ensure productToAdd has a price property, defaulting if missing
-        const price = productToAdd.price !== undefined && productToAdd.price !== null 
-                      ? parseFloat(productToAdd.price).toFixed(2) 
+        const price = productToAdd.price !== undefined && productToAdd.price !== null
+                      ? parseFloat(productToAdd.price).toFixed(2)
                       : '0.00';
         return [...prevItems, { ...productToAdd, quantity: 1, price: price }];
       }
@@ -56,10 +54,10 @@ export const CartProvider = ({ children }) => {
       return prevItems.map(item => {
         if (item.id === productId) {
           const newQuantity = item.quantity + change;
-          return { ...item, quantity: Math.max(1, newQuantity) }; 
+          return { ...item, quantity: Math.max(1, newQuantity) };
         }
         return item;
-      }).filter(item => item.quantity > 0); 
+      }).filter(item => item.quantity > 0);
     });
   }, []);
 
@@ -84,43 +82,31 @@ export const CartProvider = ({ children }) => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   }, [cartItems]);
 
-  // --- Stripe Checkout Handler ---
   const handleCheckout = async () => {
     if (cartItems.length === 0) {
-      alert("Your cart is empty! Add some items before checking out."); 
+      alert("Your cart is empty! Add some items before checking out.");
       return;
     }
 
     try {
-      const stripe = await stripePromise;
-      if (!stripe) {
-        throw new Error("Stripe.js failed to load. Check your publishable key and network.");
-      }
+      // Ensure this URL matches your Strapi backend's create-checkout-session endpoint
+      const backendUrl = 'http://localhost:1337/api/stripe/create-checkout-session';
 
-      const lineItems = cartItems.map(item => ({
-        price_data: {
-          currency: 'usd', 
-          product_data: {
-            name: item.title,
-            description: item.description,
-            images: item.imageUrl && item.imageUrl.startsWith('http') && !item.imageUrl.includes('No+Product+Image') ? [item.imageUrl] : [],
-          },
-          unit_amount: Math.round(parseFloat(item.price) * 100), 
+      const response = await fetch(backendUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        quantity: item.quantity,
-      }));
-
-      const { error } = await stripe.redirectToCheckout({
-          lineItems: lineItems,
-          mode: 'payment', 
-          successUrl: `${window.location.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancelUrl: `${window.location.origin}/cancel`,
+        body: JSON.stringify({ cartItems: cartItems }),
       });
 
-      if (error) {
-          console.error("Stripe redirect error:", error);
-          alert(`Checkout failed: ${error.message || 'An unknown error occurred.'}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create checkout session on backend.');
       }
+
+      const { url } = await response.json();
+      window.location.href = url;
 
     } catch (e) {
       console.error("Error during checkout:", e);

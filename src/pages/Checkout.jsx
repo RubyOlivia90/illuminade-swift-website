@@ -1,6 +1,6 @@
 // After
 import React from 'react';
-import { useCart } from '../CartContext'; // Import the useCart hook
+import { useCart } from '../CartContext'; 
 
 export default function Checkout() {
   const { cartItems, updateQuantity, removeFromCart, clearCart, calculateTotal, handleCheckout } = useCart();
