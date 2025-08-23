@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 
 // Corrected to use the environment variable from .env
-const STRAPI_API_URL = import.meta.env.VITE_STRAPI_API_URL; 
+const STRAPI_API_URL = import.meta.env.VITE_STRAPI_API_URL;
 
 const Contact = () => {
   // State to hold form input values
-  const [formData, setFormData] = useState({ 
-    name: '', 
-    email: '', 
-    message: '' 
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
   });
   // State to manage submission status: null, 'submitting', 'success', 'error'
-  const [submissionStatus, setSubmissionStatus] = useState(null); 
+  const [submissionStatus, setSubmissionStatus] = useState(null);
   // State to hold any error message for display
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -29,7 +29,7 @@ const Contact = () => {
     try {
       // Define the endpoint for your custom Strapi email sending API
       // You will create this endpoint in your Strapi backend (see instructions below)
-      const emailEndpoint = `${STRAPI_API_URL}/api/email/send`; 
+      const emailEndpoint = `${STRAPI_API_URL}/api/email/send`;
       console.log('Attempting to send email to:', emailEndpoint, 'with data:', formData);
 
       const response = await fetch(emailEndpoint, {
@@ -63,51 +63,51 @@ const Contact = () => {
       <h2 className="contact-title">Contact Me</h2>
       <form className="contact-form" onSubmit={handleSubmit}> {/* Attach the handleSubmit function */}
         <label htmlFor="name" className="form-label">Name</label>
-        <input 
-          type="text" 
-          id="name" 
-          name="name" 
-          className="form-input" 
-          required 
+        <input
+          type="text"
+          id="name"
+          name="name"
+          className="form-input"
+          required
           value={formData.name} // Controlled component: input value tied to state
           onChange={handleChange} // Update state on change
         />
 
         <label htmlFor="email" className="form-label">Email</label>
-        <input 
-          type="email" 
-          id="email" 
-          name="email" 
-          className="form-input" 
-          required 
+        <input
+          type="email"
+          id="email"
+          name="email"
+          className="form-input"
+          required
           value={formData.email} // Controlled component
           onChange={handleChange} // Update state on change
         />
 
         <label htmlFor="message" className="form-label">Message</label>
-        <textarea 
-          id="message" 
-          name="message" 
-          rows="5" 
-          className="form-textarea" 
-          required 
+        <textarea
+          id="message"
+          name="message"
+          rows="5"
+          className="form-textarea"
+          required
           value={formData.message} // Controlled component
           onChange={handleChange} // Update state on change
         ></textarea>
 
-        <button 
-          type="submit" 
-          className="form-submit-button" 
+        <button
+          type="submit"
+          className="form-submit-button"
           disabled={submissionStatus === 'submitting'} // Disable button during submission
         >
           {submissionStatus === 'submitting' ? 'Sending...' : 'Send Message'}
         </button>
 
         {/* Display submission status messages */}
-        {submissionStatus === 'success' && 
+        {submissionStatus === 'success' &&
           <p className="submission-message success">Your message has been sent successfully!</p>
         }
-        {submissionStatus === 'error' && 
+        {submissionStatus === 'error' &&
           <p className="submission-message error">Error: {errorMessage}</p>
         }
       </form>

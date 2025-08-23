@@ -4,11 +4,11 @@ import axios from 'axios';
 import { useCart } from '../CartContext'; // Import the useCart hook
 
 // Corrected to use the environment variable from .env
-const STRAPI_API_URL = import.meta.env.VITE_STRAPI_API_URL; 
+const STRAPI_API_URL = import.meta.env.VITE_STRAPI_API_URL;
 
 // Strapi Collection/Single Type names for the Store
-const PRODUCTS_COLLECTION = 'products'; 
-const STORE_TEXTS_COLLECTION = 'store-texts'; 
+const PRODUCTS_COLLECTION = 'products';
+const STORE_TEXTS_COLLECTION = 'store-texts';
 
 function Store() {
   const [products, setProducts] = useState([]);
@@ -26,48 +26,48 @@ function Store() {
         // --- Fetch Products (Individual Items) ---
         const productsApiUrl = `${STRAPI_API_URL}/api/${PRODUCTS_COLLECTION}?populate=*`;
         console.log(`Attempting to fetch products from: ${productsApiUrl}`);
-        const productsResponse = await axios.get(productsApiUrl); 
-        
+        const productsResponse = await axios.get(productsApiUrl);
+
         console.log("Raw response for Products API:", productsResponse.data);
 
         if (productsResponse.data && Array.isArray(productsResponse.data.data)) {
           const formattedProducts = productsResponse.data.data.map(item => {
             let processedItem = {
                 id: item.id,
-                title: 'Untitled Product (Fallback)', 
+                title: 'Untitled Product (Fallback)',
                 description: 'No description provided (Fallback).',
-                price: 'N/A', 
+                price: 'N/A',
                 stripeProductId: 'N/A',
-                imageUrl: 'https://placehold.co/600x400/FF0000/FFFFFF?text=No+Product+Image' 
+                imageUrl: 'https://placehold.co/600x400/FF0000/FFFFFF?text=No+Product+Image'
             };
-            
+
             try {
-                const sourceData = item.attributes || item; 
+                const sourceData = item.attributes || item;
 
                 console.log("--- Processing Product Item ---");
-                console.log("Processing raw product item (full object):", item); 
-                console.log("Source data for product properties (Title, Description, Price, StripeProductID, ProductImage):", sourceData); 
-                console.log("All top-level keys in sourceData:", Object.keys(sourceData)); 
+                console.log("Processing raw product item (full object):", item);
+                console.log("Source data for product properties (Title, Description, Price, StripeProductID, ProductImage):", sourceData);
+                console.log("All top-level keys in sourceData:", Object.keys(sourceData));
 
-                processedItem.title = sourceData.Title || sourceData.title || 'Untitled Product'; 
-                
+                processedItem.title = sourceData.Title || sourceData.title || 'Untitled Product';
+
                 if (Array.isArray(sourceData.Description) && sourceData.Description.length > 0) {
                     processedItem.description = sourceData.Description
                         .map(block => {
                             if (block.type === 'paragraph' && Array.isArray(block.children)) {
-                                return block.children.map(child => child.text).join(''); 
+                                return block.children.map(child => child.text).join('');
                             }
-                            return ''; 
+                            return '';
                         })
-                        .filter(Boolean) 
-                        .join('\n'); 
+                        .filter(Boolean)
+                        .join('\n');
                 } else {
                     processedItem.description = sourceData.Description || sourceData.description || 'No description provided.';
                 }
 
                 if (sourceData.Price !== undefined && sourceData.Price !== null) {
                     processedItem.price = parseFloat(sourceData.Price).toFixed(2);
-                } else if (sourceData.price !== undefined && sourceData.price !== null) { 
+                } else if (sourceData.price !== undefined && sourceData.price !== null) {
                     processedItem.price = parseFloat(sourceData.price).toFixed(2);
                 } else {
                     console.warn("Price field not found or is null/undefined for product:", item.id);
@@ -75,8 +75,8 @@ function Store() {
 
                 processedItem.stripeProductId = sourceData.StripeProductID || sourceData.stripeProductId || 'N/A';
 
-                console.log("Raw sourceData.ProductImage object:", sourceData.ProductImage); 
-                
+                console.log("Raw sourceData.ProductImage object:", sourceData.ProductImage);
+
                 let foundImageUrl = false;
                 let productImageData = sourceData.ProductImage;
 
@@ -91,30 +91,30 @@ function Store() {
                         console.log("Product Image found: Standard nested path (ProductImage.data.attributes.url)", processedItem.imageUrl);
                         foundImageUrl = true;
                     }
-                } 
-                if (!foundImageUrl && productImageData && typeof productImageData === 'object' && productImageData.url) { 
+                }
+                if (!foundImageUrl && productImageData && typeof productImageData === 'object' && productImageData.url) {
                     processedItem.imageUrl = `${STRAPI_API_URL}${productImageData.url}`;
                     console.log("Product Image found: Direct URL on ProductImage object (ProductImage.url)", processedItem.imageUrl);
                     foundImageUrl = true;
                 }
-                
+
                 if (!foundImageUrl) {
                     console.warn("Could not find product image URL after all attempts for item:", item);
-                    processedItem.imageUrl = 'https://placehold.co/600x400/CCCCCC/333333?text=No+Product+Image'; 
+                    processedItem.imageUrl = 'https://placehold.co/600x400/CCCCCC/333333?text=No+Product+Image';
                 }
 
                 console.log("Processed product object for rendering:", processedItem);
 
             } catch (parseError) {
                 console.error("Error parsing product item:", item, parseError);
-                processedItem.title = `Error parsing item ${item.id}`; 
+                processedItem.title = `Error parsing item ${item.id}`;
                 processedItem.description = 'Check console for details on this item.';
                 processedItem.imageUrl = 'https://placehold.co/600x400/FF0000/FFFFFF?text=Parsing+Error';
                 processedItem.price = 'Error';
             }
             return processedItem;
           });
-          
+
           setProducts(formattedProducts);
         } else {
           console.error("Strapi response for products did not contain an array in 'data' field or was empty:", productsResponse.data);
@@ -128,11 +128,11 @@ function Store() {
 
         console.log("Raw response for Store Text API:", textResponse.data);
 
-        if (textResponse.data && Array.isArray(textResponse.data.data) && textResponse.data.data.length > 0) { 
-          const pageContentEntry = textResponse.data.data[0]; 
-          
+        if (textResponse.data && Array.isArray(textResponse.data.data) && textResponse.data.data.length > 0) {
+          const pageContentEntry = textResponse.data.data[0];
+
           console.log("Store Text pageContentEntry (first item from array):", pageContentEntry);
-          console.log("Store Text pageContentEntry.attributes:", pageContentEntry.attributes); 
+          console.log("Store Text pageContentEntry.attributes:", pageContentEntry.attributes);
           console.log("Store Text pageContentEntry.Title (direct):", pageContentEntry.Title);
           console.log("Store Text pageContentEntry.Body (direct):", pageContentEntry.Body);
 
@@ -140,32 +140,32 @@ function Store() {
           let pageTitle = 'Our Store';
           let pageBody = 'Welcome to our store. Find unique items here!';
 
-          if (pageContentEntry.Title) { 
+          if (pageContentEntry.Title) {
               pageTitle = pageContentEntry.Title;
-          } else if (pageContentEntry.title) { 
+          } else if (pageContentEntry.title) {
               pageTitle = pageContentEntry.title;
-          } else if (pageContentEntry.attributes && pageContentEntry.attributes.Title) { 
+          } else if (pageContentEntry.attributes && pageContentEntry.attributes.Title) {
               pageTitle = pageContentEntry.attributes.Title;
-          } else if (pageContentEntry.attributes && pageContentEntry.attributes.title) { 
+          } else if (pageContentEntry.attributes && pageContentEntry.attributes.title) {
               pageTitle = pageContentEntry.attributes.title;
           }
 
-          const rawBody = pageContentEntry.Body || pageContentEntry.body || 
-                          (pageContentEntry.attributes && pageContentEntry.attributes.Body) || 
-                          (pageContentEntry.attributes && pageContentEntry.attributes.body); 
+          const rawBody = pageContentEntry.Body || pageContentEntry.body ||
+                          (pageContentEntry.attributes && pageContentEntry.attributes.Body) ||
+                          (pageContentEntry.attributes && pageContentEntry.attributes.body);
 
           if (Array.isArray(rawBody) && rawBody.length > 0) {
               pageBody = rawBody
                   .map(block => {
                       if (block.type === 'paragraph' && Array.isArray(block.children)) {
-                          return block.children.map(child => child.text).join(''); 
+                          return block.children.map(child => child.text).join('');
                       }
-                      return ''; 
+                      return '';
                   })
-                  .filter(Boolean) 
-                  .join('\n'); 
+                  .filter(Boolean)
+                  .join('\n');
           } else if (typeof rawBody === 'string') {
-              pageBody = rawBody; 
+              pageBody = rawBody;
           }
 
           setStorePageContent({ title: pageTitle, body: pageBody });
@@ -177,7 +177,7 @@ function Store() {
 
       } catch (e) {
         console.error("Error fetching data in catch block:", e);
-        if (axios.isAxiosError(e)) { 
+        if (axios.isAxiosError(e)) {
           if (e.response) {
             setError(`Failed to load content: Server Error ${e.response.status} - ${e.response.statusText}. Response: ${JSON.stringify(e.response.data)}`);
             console.error('Full Axios error response:', e.response);
@@ -195,7 +195,7 @@ function Store() {
     };
 
     fetchData();
-  }, []); 
+  }, []);
 
   if (loading) {
     return (
@@ -232,21 +232,21 @@ function Store() {
           <p className="store-page-body" style={{ whiteSpace: 'pre-line' }}>Loading page description...</p>
         </>
       )}
-      
+
       {/* Display Products */}
       {products.length === 0 ? (
         <p className="store-empty-message">No products found in the store. Please add some in Strapi!</p>
       ) : (
         <div className="store-grid">
           {products.map((product) => (
-            <div 
-              key={product.id} 
+            <div
+              key={product.id}
               className="store-card"
             >
               <div className="store-image-wrapper">
-                <img 
-                  src={product.imageUrl} 
-                  alt={product.title} 
+                <img
+                  src={product.imageUrl}
+                  alt={product.title}
                   className="store-image"
                 />
               </div>
@@ -291,13 +291,13 @@ function Store() {
           }
 
           .store-container {
-            width: 90%; 
-            max-width: 1280px; 
-            margin: 0 auto; 
-            padding: 1.5rem 1rem; 
-            padding-top: 5rem; 
+            width: 90%;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem;
+            padding-top: 5rem;
             padding-bottom: 2rem;
-            box-sizing: border-box; 
+            box-sizing: border-box;
             font-family: 'Helvetica Neue', sans-serif;
           }
 
@@ -309,10 +309,10 @@ function Store() {
           }
 
           .store-title {
-            font-size: 2.8rem; 
+            font-size: 2.8rem;
             font-weight: 800;
             text-align: center;
-            margin-bottom: 0.8rem; 
+            margin-bottom: 0.8rem;
             color: #f0f0f0;
             font-family: 'Cormorant Garamond', serif;
           }
@@ -320,9 +320,9 @@ function Store() {
           .store-page-body {
             text-align: center;
             color: #f0f0f0;
-            font-size: 1rem; 
-            margin-bottom: 2.5rem; 
-            max-width: 700px; 
+            font-size: 1rem;
+            margin-bottom: 2.5rem;
+            max-width: 700px;
             margin-left: auto;
             margin-right: auto;
             font-family: 'Quicksand', sans-serif;
@@ -338,34 +338,34 @@ function Store() {
 
           .store-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
-            gap: 1.5rem; 
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
           }
 
-          @media (min-width: 640px) { 
+          @media (min-width: 640px) {
             .store-grid {
-              grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+              grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             }
           }
 
-          @media (min-width: 768px) { 
+          @media (min-width: 768px) {
             .store-grid {
-              grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+              grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             }
           }
 
-          @media (min-width: 1024px) { 
+          @media (min-width: 1024px) {
             .store-grid {
-              grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+              grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             }
           }
 
           .store-card {
             background-color: #ffffff;
-            padding: 0.9rem; 
-            border-radius: 0.8rem; 
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); 
-            transition: all 0.3s ease-in-out; 
+            padding: 0.9rem;
+            border-radius: 0.8rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease-in-out;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -373,74 +373,74 @@ function Store() {
           }
 
           .store-card:hover {
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15); 
-            transform: translateY(-0.15rem); 
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            transform: translateY(-0.15rem);
           }
 
           .store-image-wrapper {
-            overflow: hidden; 
-            border-radius: 0.6rem; 
-            margin-bottom: 0.8rem; 
-            width: 100%; 
-            padding-top: 60%; 
-            position: relative; 
-            background-color: #f0f0f0; 
+            overflow: hidden;
+            border-radius: 0.6rem;
+            margin-bottom: 0.8rem;
+            width: 100%;
+            padding-top: 60%;
+            position: relative;
+            background-color: #f0f0f0;
           }
 
           .store-image {
-            position: absolute; 
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%; 
-            object-fit: contain; 
+            height: 100%;
+            object-fit: contain;
             border-radius: 0.6rem;
-            transition: transform 0.3s ease-in-out; 
+            transition: transform 0.3s ease-in-out;
           }
 
           .store-card:hover .store-image {
-            transform: scale(1.02); 
+            transform: scale(1.02);
           }
 
           .store-card-title {
-            font-size: 1.2rem; 
+            font-size: 1.2rem;
             font-weight: bold;
             color: #1f2937;
-            margin-bottom: 0.3rem; 
+            margin-bottom: 0.3rem;
             font-family: 'Cormorant Garamond', serif;
           }
 
           .store-card-description {
             color: #4b5563;
-            font-size: 0.8rem; 
+            font-size: 0.8rem;
             flex-grow: 1;
             margin-bottom: 0.8rem;
             font-family: 'Quicksand', sans-serif;
             white-space: pre-line;
-            word-break: break-word; 
-            overflow-wrap: break-word; 
+            word-break: break-word;
+            overflow-wrap: break-word;
           }
-          
+
           .store-card-price {
-            font-size: 1.3rem; 
+            font-size: 1.3rem;
             font-weight: bold;
             color: #064420;
-            margin-bottom: 1rem; 
+            margin-bottom: 1rem;
             font-family: 'Helvetica Neue', sans-serif;
           }
 
           .store-add-to-cart-button {
-            padding: 0.4rem 0.8rem; 
+            padding: 0.4rem 0.8rem;
             background-color: #000000ff;
             border: none;
             font-weight: 700;
             cursor: pointer;
-            border-radius: 6px; 
+            border-radius: 6px;
             color: #ffffffff;
             transition: background-color 0.2s ease;
             width: 100%;
             margin-top: auto;
-            font-size: 0.85rem; 
+            font-size: 0.85rem;
           }
 
           .store-add-to-cart-button:hover {
@@ -451,8 +451,8 @@ function Store() {
           @media (max-width: 768px) {
             .store-container {
               padding: 1rem;
-              padding-top: 4rem; 
-              width: 95%; 
+              padding-top: 4rem;
+              width: 95%;
             }
 
             .store-title {
@@ -464,13 +464,13 @@ function Store() {
             }
             .store-grid {
               gap: 1rem;
-              grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+              grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             }
             .store-card {
               padding: 0.7rem;
             }
             .store-image-wrapper {
-              padding-top: 65%; 
+              padding-top: 65%;
             }
           }
         `}

@@ -7,7 +7,8 @@ function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const API_ENDPOINT = 'VITE_STRAPI_API_URL=https://methodical-chicken-e88556b464.strapiapp.com/admin';
+  // Corrected to use the environment variable and correct API path
+  const API_ENDPOINT = `${import.meta.env.VITE_STRAPI_API_URL}/api/homepage-contents`;
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -43,7 +44,7 @@ function Home() {
     fetchContent();
   }, [API_ENDPOINT]);
 
-  // Helper to render HeroText (simplified) - No change needed here
+  // Helper to render HeroText (simplified)
   function renderHeroText(heroText) {
     if (!heroText || !Array.isArray(heroText)) return null;
     return heroText.map((block, idx) => {
@@ -67,7 +68,7 @@ function Home() {
   if (!content) return <p>No homepage content found after loading. Check console for details.</p>;
 
   // Determine background image URL for hero-header (from Strapi)
-  const heroImageUrl = content.HeroImage?.url ? `http://localhost:1337${content.HeroImage.url}` : '';
+  const heroImageUrl = content.HeroImage?.url ? `${import.meta.env.VITE_STRAPI_API_URL}${content.HeroImage.url}` : '';
 
   return (
     <div className="home-page-wrapper">
