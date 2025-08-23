@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useCart } from '../CartContext'; // Import the useCart hook
 
-// IMPORTANT: Replace with your actual Strapi API URL (e.g., 'http://localhost:1337')
-const STRAPI_API_URL = 'VITE_STRAPI_API_URL=https://methodical-chicken-e88556b464.strapiapp.com/admin'; 
+// Corrected to use the environment variable from .env
+const STRAPI_API_URL = import.meta.env.VITE_STRAPI_API_URL; 
 
 // Strapi Collection/Single Type names for the Store
 const PRODUCTS_COLLECTION = 'products'; 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
-// IMPORTANT: Replace with your actual Strapi API URL (e.g., 'http://localhost:1337')
-const STRAPI_API_URL = 'VITE_STRAPI_API_URL=https://methodical-chicken-e88556b464.strapiapp.com/admin'; 
+// Corrected to use the environment variable from .env
+const STRAPI_API_URL = import.meta.env.VITE_STRAPI_API_URL; 
 
 const Contact = () => {
   // State to hold form input values
