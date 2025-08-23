@@ -431,12 +431,12 @@ function Store() {
 
           .store-add-to-cart-button {
             padding: 0.4rem 0.8rem; 
-            background-color: #a8e6cf;
+            background-color: #000000ff;
             border: none;
             font-weight: 700;
             cursor: pointer;
             border-radius: 6px; 
-            color: #064420;
+            color: #ffffffff;
             transition: background-color 0.2s ease;
             width: 100%;
             margin-top: auto;
@@ -444,7 +444,7 @@ function Store() {
           }
 
           .store-add-to-cart-button:hover {
-            background-color: #82c9a8;
+            background-color: #969696ff;
           }
 
           /* Responsive adjustments */

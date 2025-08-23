@@ -1,8 +1,8 @@
-// src/pages/Gallery.jsx
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useCart } from '../CartContext'; 
-
+import ReactMarkdown from 'react-markdown';
 
 const STRAPI_API_URL = 'http://localhost:1337'; 
 
@@ -14,7 +14,7 @@ function Gallery() {
   const [galleryPageContent, setGalleryPageContent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { addToCart } = useCart(); // Get addToCart from cart context
+  const { addToCart } = useCart(); 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -69,7 +69,7 @@ function Gallery() {
                     console.warn("Price field not found or is null/undefined for item:", item.id);
                 }
 
-                // Parse StripeProductID from sourceData
+                
                 processedItem.stripeProductId = sourceData.StripeProductID || sourceData.stripeProductId || 'N/A';
                 if (processedItem.stripeProductId === 'N/A') {
                     console.warn("StripeProductID field not found or is null/undefined for item:", item.id);
@@ -137,7 +137,7 @@ function Gallery() {
           console.log("Gallery Text pageContentEntry.Title (direct):", pageContentEntry.Title);
           console.log("Gallery Text pageContentEntry.Body (direct):", pageContentEntry.Body);
 
-          let pageTitle = 'Our Gallery';
+          let pageTitle = 'My Gallery';
           let pageBody = 'Add page description in Strapi.';
 
           if (pageContentEntry.Title) { 
@@ -215,18 +215,18 @@ function Gallery() {
 
   return (
     <div className="gallery-container" style={{ 
-        paddingTop: '7rem', // Increased padding-top
+        paddingTop: '7rem', 
         display: 'flex', 
         flexDirection: 'column', 
-        alignItems: 'center', // Centers children horizontally in a column
+        alignItems: 'center', 
         maxWidth: '1280px', 
-        margin: '0 auto', 
+        margin: 'auto', 
         paddingLeft: '1.5rem', 
         paddingRight: '1.5rem', 
         paddingBottom: '2rem',
         boxSizing: 'border-box'
     }}>
-      {/* Display Gallery Page Title and Body */}
+      {}
       {galleryPageContent ? (
         <>
           <h1 className="gallery-title" style={{ textAlign: 'center' }}>
@@ -237,7 +237,7 @@ function Gallery() {
           </p>
         </>
       ) : (
-        // Fallback for page content if it's not loaded yet
+        
         <>
           <h1 className="gallery-title" style={{ textAlign: 'center' }}>Our Gallery</h1>
           <p className="gallery-page-body" style={{ whiteSpace: 'pre-line', textAlign: 'center' }}>Loading page description...</p>
@@ -252,15 +252,15 @@ function Gallery() {
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
             gap: '1.5rem',
-            width: '100%', // Ensure grid takes full width available
-            marginTop: '2rem' // Add some space from the body text
+            width: '100%', 
+            marginTop: '2rem' 
         }}>
           {photos.map((photo) => (
             <div 
               key={photo.id} 
               className="gallery-card"
               style={{
-                  backgroundColor: '#ffffff',
+                  backgroundColor: '#FFCCFF',
                   padding: '0.9rem',
                   borderRadius: '0.8rem',
                   boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
@@ -276,7 +276,7 @@ function Gallery() {
                   borderRadius: '0.6rem',
                   marginBottom: '0.8rem',
                   width: '100%',
-                  height: '200px', // Fixed height for images
+                  height: '250px', // Fixed height for images
                   position: 'relative',
                   backgroundColor: '#f0f0f0'
               }}>
@@ -305,7 +305,7 @@ function Gallery() {
               </h2>
               <p className="gallery-card-description" style={{
                     whiteSpace: 'pre-line',
-                    color: '#4b5563',
+                    color: '#757575ff',
                     fontSize: '0.8rem',
                     flexGrow: 1,
                     marginBottom: '0.8rem',
@@ -319,19 +319,19 @@ function Gallery() {
               <div className="gallery-card-price" style={{
                     fontSize: '1.3rem',
                     fontWeight: 'bold',
-                    color: '#064420',
+                    color: '#000000ff',
                     marginBottom: '1rem'
                 }}>
                 {photo.price !== 'N/A' ? `$${photo.price}` : 'Price: N/A'}
               </div>
               <button onClick={() => addToCart(photo)} className="gallery-add-to-cart-button" style={{
                     padding: '0.4rem 0.8rem',
-                    backgroundColor: '#a8e6cf',
+                    backgroundColor: '#ffffffff',
                     border: 'none',
                     fontWeight: 700,
                     cursor: 'pointer',
                     borderRadius: '6px',
-                    color: '#064420',
+                    color: '#000000ff',
                     transition: 'background-color 0.2s ease',
                     width: '100%',
                     marginTop: 'auto',

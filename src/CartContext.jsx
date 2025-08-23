@@ -1,8 +1,9 @@
+// src/CartContext.jsx
 import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 
 // Define your Stripe Publishable Key
-const STRIPE_PUBLISHABLE_KEY = 'pk_test_51RhxDPIDsQ9cJjG5L7qvEPejIpP1FAfpTUNO4wMMxr9YFj6l1N2vCiv02GW7r1AYk8zEC9wXGvaZHwb1qGqHiaXT00gJ7NiwYg';
+const STRIPE_PUBLISHABLE_KEY = 'pk_live_51RhxDHI1Z4BL7SCtbuFgB8YLJq08QNSeWkGVsYqJh0TyUn24LJ6mAJB83aIPqi8iVIr2sYEzxI507awSc4PYtSA500v0wMQv6E';
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 // Create the Context
@@ -82,35 +83,61 @@ export const CartProvider = ({ children }) => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   }, [cartItems]);
 
-  const handleCheckout = async () => {
+  const handleCheckout = async (customerDetails) => {
     if (cartItems.length === 0) {
-      alert("Your cart is empty! Add some items before checking out.");
+      alert("Your cart is empty! Add some items before proceeding.");
       return;
     }
 
+    if (!customerDetails.name || !customerDetails.email || !customerDetails.phone || !customerDetails.address || !customerDetails.city || !customerDetails.state || !customerDetails.zip) {
+      alert("Please fill in all customer details before proceeding.");
+      return;
+    }
+
+    const orderDetails = cartItems.map(item => 
+      `${item.title} (x${item.quantity}) - $${(parseFloat(item.price) * item.quantity).toFixed(2)}`
+    ).join('\n');
+  
+    const emailBody = `New Order from Illuminade Website!
+
+  Customer Information:
+  Name: ${customerDetails.name}
+  Email: ${customerDetails.email}
+  Phone: ${customerDetails.phone}
+  Address: ${customerDetails.address}, ${customerDetails.city}, ${customerDetails.state}, ${customerDetails.zip}
+
+  Order Details:
+  ${orderDetails}
+
+  Total: $${calculateTotal()}
+
+  Please contact the customer to confirm the order and arrange payment.`;
+
     try {
-      // Ensure this URL matches your Strapi backend's create-checkout-session endpoint
-      const backendUrl = 'http://localhost:1337/api/stripe/create-checkout-session';
+      const backendUrl = 'http://localhost:1337/api/email/send'; 
 
       const response = await fetch(backendUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ cartItems: cartItems }),
+        body: JSON.stringify({ 
+          name: customerDetails.name,
+          email: 'iluminadeswiftproton.me@proton.me', 
+          message: emailBody,
+        }),
       });
 
-      if (!response.ok) {
+      if (response.ok) {
+        alert("Your order has been sent to the site owner. They will contact you shortly to complete the purchase!");
+        clearCart(); 
+      } else {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create checkout session on backend.');
+        throw new Error(errorData.message || 'Failed to send order email.');
       }
-
-      const { url } = await response.json();
-      window.location.href = url;
-
     } catch (e) {
-      console.error("Error during checkout:", e);
-      alert(`Checkout process failed: ${e.message || 'Please try again.'}`);
+      console.error("Error sending order email:", e);
+      alert(`Order submission failed: ${e.message || 'Please try again.'}`);
     }
   };
 

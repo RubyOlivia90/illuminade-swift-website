@@ -1,9 +1,33 @@
-// After
-import React from 'react';
+// src/pages/Checkout.jsx
+import React, { useState } from 'react';
 import { useCart } from '../CartContext'; 
 
 export default function Checkout() {
   const { cartItems, updateQuantity, removeFromCart, clearCart, calculateTotal, handleCheckout } = useCart();
+
+  // State to hold customer's details
+  const [customerDetails, setCustomerDetails] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    zip: '',
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setCustomerDetails(prevDetails => ({
+      ...prevDetails,
+      [name]: value,
+    }));
+  };
+
+  const handleProceedToCheckout = () => {
+    // Pass customer details to the handleCheckout function from CartContext
+    handleCheckout(customerDetails);
+  };
 
   return (
     <div className="checkout-page-container">
@@ -38,11 +62,92 @@ export default function Checkout() {
             ))}
           </div>
 
+          <div className="customer-info-form">
+            <h2 className="form-title">Shipping & Contact Info</h2>
+            <form>
+              <label htmlFor="name">Full Name</label>
+              <input 
+                type="text" 
+                id="name" 
+                name="name" 
+                required 
+                value={customerDetails.name} 
+                onChange={handleInputChange} 
+              />
+
+              <label htmlFor="email">Email</label>
+              <input 
+                type="email" 
+                id="email" 
+                name="email" 
+                required 
+                value={customerDetails.email} 
+                onChange={handleInputChange} 
+              />
+
+              <label htmlFor="phone">Phone Number</label>
+              <input 
+                type="tel" 
+                id="phone" 
+                name="phone" 
+                required 
+                value={customerDetails.phone} 
+                onChange={handleInputChange} 
+              />
+              
+              <label htmlFor="address">Delivery Address</label>
+              <input 
+                type="text" 
+                id="address" 
+                name="address" 
+                required 
+                value={customerDetails.address} 
+                onChange={handleInputChange} 
+              />
+
+              <div className="city-state-zip">
+                <div className="form-group">
+                  <label htmlFor="city">City</label>
+                  <input 
+                    type="text" 
+                    id="city" 
+                    name="city" 
+                    required 
+                    value={customerDetails.city} 
+                    onChange={handleInputChange} 
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="state">State</label>
+                  <input 
+                    type="text" 
+                    id="state" 
+                    name="state" 
+                    required 
+                    value={customerDetails.state} 
+                    onChange={handleInputChange} 
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="zip">ZIP Code</label>
+                  <input 
+                    type="text" 
+                    id="zip" 
+                    name="zip" 
+                    required 
+                    value={customerDetails.zip} 
+                    onChange={handleInputChange} 
+                  />
+                </div>
+              </div>
+            </form>
+          </div>
+
           <div className="cart-summary">
             <p className="cart-total">Total: ${calculateTotal()}</p>
             <div className="cart-actions">
               <button onClick={clearCart} className="clear-cart-button">Clear Cart</button>
-              <button onClick={handleCheckout} className="proceed-to-checkout-button">Proceed to Checkout</button>
+              <button onClick={handleProceedToCheckout} className="proceed-to-checkout-button">Proceed to Checkout</button>
             </div>
           </div>
         </>
@@ -59,7 +164,7 @@ export default function Checkout() {
             font-family: 'Helvetica Neue', sans-serif;
             color: #f0f0f0;
           }
-
+          
           .checkout-title {
             font-family: 'Cormorant Garamond', serif;
             font-size: 2.5rem;
@@ -178,6 +283,60 @@ export default function Checkout() {
             text-align: right;
           }
 
+          .customer-info-form {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+          }
+          
+          .form-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-align: left;
+            margin-bottom: 1rem;
+            color: #1f2937;
+          }
+          
+          .customer-info-form form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+          }
+          
+          .customer-info-form label {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 0.25rem;
+          }
+          
+          .customer-info-form input {
+            padding: 0.75rem;
+            font-size: 1rem;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+            color: #333;
+          }
+          
+          .city-state-zip {
+            display: flex;
+            gap: 1rem;
+          }
+          
+          .city-state-zip .form-group {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+          }
+
           .cart-summary {
             background-color: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
@@ -211,7 +370,7 @@ export default function Checkout() {
 
           .clear-cart-button {
             background-color: #f0f0f0;
-            color: #4b5563;
+            color: #880000ff;
           }
 
           .clear-cart-button:hover {
@@ -220,12 +379,12 @@ export default function Checkout() {
           }
 
           .proceed-to-checkout-button {
-            background-color: #a8e6cf;
-            color: #064420;
+            background-color: #ffffffff;
+            color: #000000ff;
           }
 
           .proceed-to-checkout-button:hover {
-            background-color: #82c9a8;
+            background-color: #ffffffff;
             transform: translateY(-2px);
           }
 
@@ -259,6 +418,13 @@ export default function Checkout() {
             }
             .cart-actions button {
               width: 100%;
+            }
+            .customer-info-form form {
+              gap: 0.8rem;
+            }
+            .city-state-zip {
+              flex-direction: column;
+              gap: 0.8rem;
             }
           }
         `}

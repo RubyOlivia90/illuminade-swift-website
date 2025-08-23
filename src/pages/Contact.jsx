@@ -146,7 +146,7 @@ const Contact = () => {
           .form-label {
             font-size: 1rem;
             font-weight: 600;
-            color: #333; /* Darker text for labels inside the light form background */
+            color: #000000ff; /* Darker text for labels inside the light form background */
             margin-bottom: 0.25rem;
           }
 
@@ -158,15 +158,15 @@ const Contact = () => {
             border: 1px solid #ccc;
             border-radius: 8px;
             box-sizing: border-box; /* Include padding and border in the element's total width and height */
-            color: #333;
+            color: #000000ff;
             background-color: #f9f9f9;
             transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
           }
 
           .form-input:focus,
           .form-textarea:focus {
-            border-color: #a8e6cf; /* Highlight on focus */
-            box-shadow: 0 0 0 3px rgba(168, 230, 207, 0.5); /* Soft glow on focus */
+            border-color: #ffffffff; /* Highlight on focus */
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 1); /* Soft glow on focus */
             outline: none;
           }
 
@@ -176,19 +176,19 @@ const Contact = () => {
 
           .form-submit-button {
             padding: 0.75rem 1.5rem;
-            background-color: #a8e6cf; /* Matching your button style from index.css */
+            background-color: #ffffffff; /* Matching your button style from index.css */
             border: none;
             font-weight: 700;
             cursor: pointer;
             border-radius: 8px;
-            color: #064420;
+            color: #000000ff;
             font-size: 1.1rem;
             transition: background-color 0.3s ease, transform 0.2s ease;
             margin-top: 1rem;
           }
 
           .form-submit-button:hover {
-            background-color: #82c9a8;
+            background-color: #8b8b8bff;
             transform: translateY(-2px);
           }
 
@@ -202,9 +202,9 @@ const Contact = () => {
           }
 
           .submission-message.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background-color: #ffffffff;
+            color: #000000ff;
+            border: 1px solid #ffffffff;
           }
 
           .submission-message.error {

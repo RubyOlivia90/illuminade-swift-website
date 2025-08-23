@@ -26,16 +26,15 @@ const Footer = () => {
 
         <div className="footer-section footer-contact">
           <h3 className="footer-heading">Get in Touch</h3>
-          <p>Email: <a href="mailto:info@illuminade.com">example@iluminade.com</a></p>
-          <p>Phone: (123) 456-7890</p>
+          <p>Email: <a href="mailto:info@illuminade.com">iluminadeswiftproton.me@proton.me</a></p>
           <p>Location: Boston, MA</p>
         </div>
 
         <div className="footer-section footer-social">
           <h3 className="footer-heading">Follow Me</h3>
           <div className="social-links">
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">TikTok</a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">Instagram</a>
+            <a href="https://www.tiktok.com/@iluminade11" target="_blank" rel="noopener noreferrer">TikTok</a>
+            <a href="https://instagram.com/iluminade11" target="_blank" rel="noopener noreferrer">Instagram</a>
           </div>
         </div>
       </div>
