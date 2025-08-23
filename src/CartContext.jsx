@@ -94,10 +94,10 @@ export const CartProvider = ({ children }) => {
       return;
     }
 
-    const orderDetails = cartItems.map(item => 
+    const orderDetails = cartItems.map(item =>
       `${item.title} (x${item.quantity}) - $${(parseFloat(item.price) * item.quantity).toFixed(2)}`
     ).join('\n');
-  
+
     const emailBody = `New Order from Illuminade Website!
 
   Customer Information:
@@ -114,23 +114,24 @@ export const CartProvider = ({ children }) => {
   Please contact the customer to confirm the order and arrange payment.`;
 
     try {
-      const backendUrl = 'http://localhost:1337/api/email/send'; 
+      // Corrected to use the environment variable
+      const backendUrl = `${import.meta.env.VITE_STRAPI_API_URL}/api/email/send`;
 
       const response = await fetch(backendUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           name: customerDetails.name,
-          email: 'iluminadeswiftproton.me@proton.me', 
+          email: 'iluminadeswiftproton.me@proton.me',
           message: emailBody,
         }),
       });
 
       if (response.ok) {
         alert("Your order has been sent to the site owner. They will contact you shortly to complete the purchase!");
-        clearCart(); 
+        clearCart();
       } else {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to send order email.');
