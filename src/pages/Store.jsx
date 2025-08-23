@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useCart } from '../CartContext'; // Import the useCart hook
 
 // IMPORTANT: Replace with your actual Strapi API URL (e.g., 'http://localhost:1337')
-const STRAPI_API_URL = 'https://methodical-chicken-e88556b464.strapiapp.com/admin'; 
+const STRAPI_API_URL = 'VITE_STRAPI_API_URL=https://methodical-chicken-e88556b464.strapiapp.com/admin'; 
 
 // Strapi Collection/Single Type names for the Store
 const PRODUCTS_COLLECTION = 'products'; 

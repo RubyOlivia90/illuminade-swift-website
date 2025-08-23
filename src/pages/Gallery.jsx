@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useCart } from '../CartContext'; 
 import ReactMarkdown from 'react-markdown';
 
-const STRAPI_API_URL = 'http://localhost:1337'; 
+const STRAPI_API_URL = 'VITE_STRAPI_API_URL=https://methodical-chicken-e88556b464.strapiapp.com/admin'; 
 
 const GALLERY_ITEMS_COLLECTION = 'gallery-items'; 
 const GALLERY_TEXTS_COLLECTION = 'gallery-texts'; 

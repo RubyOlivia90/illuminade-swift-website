@@ -7,7 +7,7 @@ function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const API_ENDPOINT = 'http://localhost:1337/api/home-page-contents?populate=*';
+  const API_ENDPOINT = 'VITE_STRAPI_API_URL=https://methodical-chicken-e88556b464.strapiapp.com/admin';
 
   useEffect(() => {
     const fetchContent = async () => {
