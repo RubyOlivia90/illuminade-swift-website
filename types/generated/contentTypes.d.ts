@@ -537,6 +537,40 @@ export interface ApiHomePageContentHomePageContent
   };
 }
 
+export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
+  collectionName: 'orders';
+  info: {
+    displayName: 'Order';
+    pluralName: 'orders';
+    singularName: 'order';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    customerAddress: Schema.Attribute.String;
+    customerEmail: Schema.Attribute.Email;
+    customerName: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::order.order'> &
+      Schema.Attribute.Private;
+    orderId: Schema.Attribute.UID;
+    orderStatus: Schema.Attribute.Enumeration<
+      ['pending', 'paid', 'shipped', 'cancelled']
+    >;
+    paymentMethod: Schema.Attribute.String;
+    products: Schema.Attribute.JSON;
+    publishedAt: Schema.Attribute.DateTime;
+    total: Schema.Attribute.Decimal;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiProductProduct extends Struct.CollectionTypeSchema {
   collectionName: 'products';
   info: {
@@ -1115,6 +1149,7 @@ declare module '@strapi/strapi' {
       'api::gallery-item.gallery-item': ApiGalleryItemGalleryItem;
       'api::gallery-text.gallery-text': ApiGalleryTextGalleryText;
       'api::home-page-content.home-page-content': ApiHomePageContentHomePageContent;
+      'api::order.order': ApiOrderOrder;
       'api::product.product': ApiProductProduct;
       'api::store-text.store-text': ApiStoreTextStoreText;
       'plugin::content-releases.release': PluginContentReleasesRelease;
