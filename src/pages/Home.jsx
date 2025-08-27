@@ -8,7 +8,7 @@ function Home() {
   const [error, setError] = useState(null);
 
   // Corrected to use the environment variable and correct API path
-  const API_ENDPOINT = `${import.meta.env.VITE_STRAPI_API_URL}/api/homepage-contents`;
+  const API_ENDPOINT = `${import.meta.env.VITE_STRAPI_API_URL}/api/home-page-contents`;
 
   useEffect(() => {
     const fetchContent = async () => {
