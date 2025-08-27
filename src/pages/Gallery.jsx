@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 const GALLERY_ITEMS_COLLECTION = 'gallery-items';
 const GALLERY_TEXTS_COLLECTION = 'gallery-texts';
 
-// Base Strapi API URL from environment variable
+// Base Strapi API URL from Vercel env variable (should NOT include /api)
 const STRAPI_API_URL = import.meta.env.VITE_STRAPI_API_URL;
 
 function Gallery() {
@@ -23,14 +23,12 @@ function Gallery() {
       setError(null);
 
       try {
-        // Full API endpoints
+        // Correct API URLs — no double /api
         const itemsApiUrl = `${STRAPI_API_URL}/api/${GALLERY_ITEMS_COLLECTION}?populate=*`;
         const textsApiUrl = `${STRAPI_API_URL}/api/${GALLERY_TEXTS_COLLECTION}?populate=*`;
 
         // Fetch gallery items
-        console.log(`Fetching gallery items from: ${itemsApiUrl}`);
         const itemsResponse = await axios.get(itemsApiUrl);
-
         if (itemsResponse.data && Array.isArray(itemsResponse.data.data)) {
           const formattedPhotos = itemsResponse.data.data.map(item => {
             const source = item.attributes || {};
@@ -47,20 +45,15 @@ function Gallery() {
               stripeProductId: source.StripeProductID || 'N/A'
             };
           });
-
           setPhotos(formattedPhotos);
         } else {
           setError('No gallery items found or published.');
         }
 
         // Fetch gallery page text
-        console.log(`Fetching gallery page content from: ${textsApiUrl}`);
         const textResponse = await axios.get(textsApiUrl);
-
         if (textResponse.data && Array.isArray(textResponse.data.data) && textResponse.data.data.length > 0) {
-          const pageContentEntry = textResponse.data.data[0];
-          const attributes = pageContentEntry.attributes || {};
-
+          const attributes = textResponse.data.data[0].attributes || {};
           setGalleryPageContent({
             title: attributes.Title || 'Our Gallery',
             body: attributes.Body || 'Add page description in Strapi.'
