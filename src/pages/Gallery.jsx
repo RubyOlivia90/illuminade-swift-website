@@ -3,16 +3,16 @@ import axios from 'axios';
 import { useCart } from '../CartContext';
 import ReactMarkdown from 'react-markdown';
 
-// Collection slugs (must match Strapi exactly)
+// Strapi collection slugs
 const GALLERY_ITEMS_COLLECTION = 'gallery-items';
 const GALLERY_TEXTS_COLLECTION = 'gallery-texts';
 
-// Base Strapi API URL from Vite env variable
+// Base API URL from environment
 const STRAPI_API_URL = import.meta.env.VITE_STRAPI_API_URL || '';
 
-function Gallery() {
+export default function Gallery() {
   const [photos, setPhotos] = useState([]);
-  const [galleryPageContent, setGalleryPageContent] = useState(null);
+  const [pageContent, setPageContent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { addToCart } = useCart();
@@ -29,16 +29,19 @@ function Gallery() {
       setError(null);
 
       try {
-        const itemsApiUrl = `${STRAPI_API_URL}/api/${GALLERY_ITEMS_COLLECTION}?populate=*`;
-        const textsApiUrl = `${STRAPI_API_URL}/api/${GALLERY_TEXTS_COLLECTION}?populate=*`;
-
         // Fetch gallery items
-        const itemsResponse = await axios.get(itemsApiUrl);
-        if (itemsResponse.data?.data && Array.isArray(itemsResponse.data.data)) {
+        const itemsResponse = await axios.get(
+          `${STRAPI_API_URL}/api/${GALLERY_ITEMS_COLLECTION}?populate=*`
+        );
+        const textsResponse = await axios.get(
+          `${STRAPI_API_URL}/api/${GALLERY_TEXTS_COLLECTION}?populate=*`
+        );
+
+        // Process items
+        if (Array.isArray(itemsResponse.data?.data)) {
           const formattedPhotos = itemsResponse.data.data.map(item => {
             const attrs = item.attributes || {};
             let imageUrl = attrs.Image?.data?.attributes?.url || '';
-            // Prepend STRAPI_API_URL if relative path
             if (imageUrl && !imageUrl.startsWith('http')) {
               imageUrl = `${STRAPI_API_URL}${imageUrl}`;
             }
@@ -56,20 +59,14 @@ function Gallery() {
           setError('No gallery items found or published.');
         }
 
-        // Fetch gallery page content
-        const textResponse = await axios.get(textsApiUrl);
-        if (textResponse.data?.data?.length > 0) {
-          const attrs = textResponse.data.data[0].attributes || {};
-          setGalleryPageContent({
-            title: attrs.Title || 'Our Gallery',
-            body: attrs.Body || 'Add page description in Strapi.',
-          });
-        } else {
-          setGalleryPageContent({ title: 'Our Gallery', body: 'Add page description in Strapi.' });
-        }
-
-      } catch (e) {
-        console.error('Error fetching gallery data:', e);
+        // Process page content
+        const firstText = textsResponse.data?.data?.[0]?.attributes || {};
+        setPageContent({
+          title: firstText.Title || 'Our Gallery',
+          body: firstText.Body || 'Add page description in Strapi.',
+        });
+      } catch (err) {
+        console.error('Error fetching gallery data:', err);
         setError('Failed to load gallery content. Check console for details.');
       } finally {
         setLoading(false);
@@ -79,90 +76,78 @@ function Gallery() {
     fetchData();
   }, []);
 
-  if (loading) return <div className="gallery-loading-error-container loading-state">Loading gallery...</div>;
-  if (error) return <div className="gallery-loading-error-container error-state">Error: {error}</div>;
+  if (loading) return <div>Loading gallery...</div>;
+  if (error) return <div style={{ color: 'red' }}>Error: {error}</div>;
 
   return (
-    <div className="gallery-container" style={{
-      paddingTop: '7rem',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      maxWidth: '1280px',
-      margin: 'auto',
-      paddingLeft: '1.5rem',
-      paddingRight: '1.5rem',
-      paddingBottom: '2rem',
-      boxSizing: 'border-box'
-    }}>
+    <div style={{ padding: '2rem', maxWidth: '1280px', margin: 'auto' }}>
       {/* Page Title & Body */}
-      {galleryPageContent && (
+      {pageContent && (
         <>
-          <h1 className="gallery-title" style={{ textAlign: 'center' }}>{galleryPageContent.title}</h1>
-          <ReactMarkdown className="gallery-page-body" style={{ whiteSpace: 'pre-line', textAlign: 'center' }}>
-            {galleryPageContent.body}
-          </ReactMarkdown>
+          <h1 style={{ textAlign: 'center' }}>{pageContent.title}</h1>
+          <ReactMarkdown style={{ textAlign: 'center' }}>{pageContent.body}</ReactMarkdown>
         </>
       )}
 
-      {/* Photos Grid */}
-      {photos.length === 0 ? (
-        <p style={{ textAlign: 'center', color: '#f0f0f0', fontSize: '1.1rem' }}>No photos found in the gallery. Please add some in Strapi!</p>
-      ) : (
-        <div className="gallery-grid" style={{
+      {/* Gallery Grid */}
+      <div
+        style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
           gap: '1.5rem',
-          width: '100%',
-          marginTop: '2rem'
-        }}>
-          {photos.map(photo => (
-            <div key={photo.id} className="gallery-card" style={{
+          marginTop: '2rem',
+        }}
+      >
+        {photos.map(photo => (
+          <div
+            key={photo.id}
+            style={{
               backgroundColor: '#FFCCFF',
-              padding: '0.9rem',
+              padding: '1rem',
               borderRadius: '0.8rem',
-              boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
               display: 'flex',
               flexDirection: 'column',
-              textAlign: 'center'
-            }}>
-              <div style={{ overflow: 'hidden', borderRadius: '0.6rem', marginBottom: '0.8rem', width: '100%', height: '250px', position: 'relative', backgroundColor: '#f0f0f0' }}>
-                <img src={photo.imageUrl} alt={photo.title} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: '0.6rem' }} />
-              </div>
-              <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', color: '#1f2937', marginBottom: '0.3rem' }}>{photo.title}</h2>
-              <p style={{
-                whiteSpace: 'pre-line',
-                color: '#757575ff',
-                fontSize: '0.8rem',
-                flexGrow: 1,
-                marginBottom: '0.8rem',
+              textAlign: 'center',
+            }}
+          >
+            <div
+              style={{
                 overflow: 'hidden',
-                display: '-webkit-box',
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: 'vertical'
-              }}>{photo.description}</p>
-              <div style={{ fontSize: '1.3rem', fontWeight: 'bold', color: '#000000ff', marginBottom: '1rem' }}>
-                {photo.price !== 'N/A' ? `$${photo.price}` : 'Price: N/A'}
-              </div>
-              <button onClick={() => addToCart(photo)} style={{
-                padding: '0.4rem 0.8rem',
-                backgroundColor: '#ffffffff',
-                border: 'none',
-                fontWeight: 700,
-                cursor: 'pointer',
-                borderRadius: '6px',
-                color: '#000000ff',
-                transition: 'background-color 0.2s ease',
-                width: '100%',
-                marginTop: 'auto',
-                fontSize: '0.85rem'
-              }}>Add to Cart</button>
+                borderRadius: '0.6rem',
+                height: '250px',
+                marginBottom: '0.8rem',
+                position: 'relative',
+                backgroundColor: '#f0f0f0',
+              }}
+            >
+              <img
+                src={photo.imageUrl}
+                alt={photo.title}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
             </div>
-          ))}
-        </div>
-      )}
+            <h2>{photo.title}</h2>
+            <p style={{ color: '#757575', fontSize: '0.85rem', minHeight: '3em' }}>
+              {photo.description}
+            </p>
+            <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
+              {photo.price !== 'N/A' ? `$${photo.price}` : 'Price: N/A'}
+            </div>
+            <button
+              onClick={() => addToCart(photo)}
+              style={{
+                padding: '0.4rem 0.8rem',
+                border: 'none',
+                borderRadius: '6px',
+                backgroundColor: '#fff',
+                cursor: 'pointer',
+              }}
+            >
+              Add to Cart
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
-
-export default Gallery;
