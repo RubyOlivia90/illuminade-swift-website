@@ -21,24 +21,23 @@ function Home() {
       setError(null);
 
       try {
-        const response = await axios.get(
-          `${STRAPI_API_URL}/api/home-page-contents?populate=*`
-        );
+        // IMPORTANT: populate=* fetches all nested fields like media
+        const response = await axios.get(`${STRAPI_API_URL}/api/home-page-contents?populate=*`);
 
-        const entries = response.data?.data;
-        if (entries && entries.length > 0) {
-          const firstEntry = entries[0];
-          setContent(firstEntry.attributes || {});
+        const firstEntry = response.data?.data?.[0];
+        if (firstEntry) {
+          setContent(firstEntry.attributes);
         } else {
           setError('No homepage content found or published in Strapi.');
         }
       } catch (e) {
+        console.error(e);
         if (e.response) {
-          setError(`Server error ${e.response.status} - ${e.response.statusText}`);
+          setError(`Server Error ${e.response.status}: ${e.response.statusText}`);
         } else if (e.request) {
-          setError('No response from server. Is Strapi running?');
+          setError('No response from server. Is Strapi running and public API accessible?');
         } else {
-          setError(`Fetch error: ${e.message}`);
+          setError(`Error: ${e.message}`);
         }
       } finally {
         setLoading(false);
@@ -50,23 +49,25 @@ function Home() {
 
   if (loading) return <p>Loading homepage content...</p>;
   if (error) return <p style={{ color: 'red' }}>Error: {error}</p>;
-  if (!content) return <p>No homepage content found after loading.</p>;
+  if (!content) return <p>No homepage content found.</p>;
 
-  // Helper to render HeroText (supports structured blocks)
-  const renderHeroText = (heroText) => {
-    if (!heroText || !Array.isArray(heroText)) return null;
-    return heroText.map((block, idx) => {
+  // Hero Image URL
+  const heroImageUrl = content.HeroImage?.data?.attributes?.url
+    ? content.HeroImage.data.attributes.url.startsWith('http')
+      ? content.HeroImage.data.attributes.url
+      : `${STRAPI_API_URL}${content.HeroImage.data.attributes.url}`
+    : '';
+
+  // Helper to render HeroText (assuming it's a JSON structure)
+  const renderHeroText = (blocks) => {
+    if (!blocks || !Array.isArray(blocks)) return null;
+    return blocks.map((block, idx) => {
       if (block.type === 'paragraph') {
         return (
           <p key={idx}>
             {block.children.map((child, cidx) => {
               if (child.type === 'text') return child.text;
-              if (child.type === 'link')
-                return (
-                  <a key={cidx} href={child.url}>
-                    {child.children[0]?.text}
-                  </a>
-                );
+              if (child.type === 'link') return <a key={cidx} href={child.url}>{child.children[0]?.text}</a>;
               return null;
             })}
           </p>
@@ -76,16 +77,9 @@ function Home() {
     });
   };
 
-  // Determine hero image URL
-  let heroImageUrl = '';
-  if (content.HeroImage?.data?.attributes?.url) {
-    heroImageUrl = content.HeroImage.data.attributes.url.startsWith('http')
-      ? content.HeroImage.data.attributes.url
-      : `${STRAPI_API_URL}${content.HeroImage.data.attributes.url}`;
-  }
-
   return (
     <div className="home-page-wrapper">
+      {/* Hero Section */}
       <header
         className="hero-header"
         style={{ backgroundImage: heroImageUrl ? `url(${heroImageUrl})` : 'none' }}
@@ -96,13 +90,11 @@ function Home() {
         </div>
       </header>
 
-      {/* About Me Section */}
-      <div className="home-container about-section" style={{ marginTop: '2rem' }}>
+      {/* About Section */}
+      <section className="home-container about-section" style={{ marginTop: '2rem' }}>
         <h2>About Me</h2>
         {content.About ? (
-          <ReactMarkdown
-            style={{ whiteSpace: 'pre-line', maxWidth: '700px', margin: '0 auto' }}
-          >
+          <ReactMarkdown style={{ whiteSpace: 'pre-line', maxWidth: '700px', margin: '0 auto' }}>
             {content.About}
           </ReactMarkdown>
         ) : (
@@ -110,7 +102,7 @@ function Home() {
             Add your about me content in Strapi.
           </p>
         )}
-      </div>
+      </section>
     </div>
   );
 }
