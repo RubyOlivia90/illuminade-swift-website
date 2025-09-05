@@ -121,6 +121,10 @@ coverage
 # Strapi
 ############################
 
+# It is crucial to have these files committed to your repo.
+# They are not a security risk and are necessary for deployment.
+# We will not ignore the content type files in this block.
+
 .env
 license.txt
 exports
