@@ -21,15 +21,16 @@ function Home() {
       setError(null);
 
       try {
-        // IMPORTANT: populate=* fetches all nested fields like media
+        // Use populate=* to get media files
         const response = await axios.get(`${STRAPI_API_URL}/api/home-page-contents?populate=*`);
 
-        const firstEntry = response.data?.data?.[0];
-        if (firstEntry) {
-          setContent(firstEntry.attributes);
-        } else {
-          setError('No homepage content found or published in Strapi.');
-        }
+        // Handle both find (array) and findOne (object)
+        const entry = Array.isArray(response.data?.data)
+          ? response.data.data[0]?.attributes
+          : response.data?.data?.attributes;
+
+        if (entry) setContent(entry);
+        else setError('No homepage content found or published in Strapi.');
       } catch (e) {
         console.error(e);
         if (e.response) {
@@ -51,14 +52,12 @@ function Home() {
   if (error) return <p style={{ color: 'red' }}>Error: {error}</p>;
   if (!content) return <p>No homepage content found.</p>;
 
-  // Hero Image URL
   const heroImageUrl = content.HeroImage?.data?.attributes?.url
     ? content.HeroImage.data.attributes.url.startsWith('http')
       ? content.HeroImage.data.attributes.url
       : `${STRAPI_API_URL}${content.HeroImage.data.attributes.url}`
     : '';
 
-  // Helper to render HeroText (assuming it's a JSON structure)
   const renderHeroText = (blocks) => {
     if (!blocks || !Array.isArray(blocks)) return null;
     return blocks.map((block, idx) => {
@@ -79,7 +78,6 @@ function Home() {
 
   return (
     <div className="home-page-wrapper">
-      {/* Hero Section */}
       <header
         className="hero-header"
         style={{ backgroundImage: heroImageUrl ? `url(${heroImageUrl})` : 'none' }}
@@ -90,7 +88,6 @@ function Home() {
         </div>
       </header>
 
-      {/* About Section */}
       <section className="home-container about-section" style={{ marginTop: '2rem' }}>
         <h2>About Me</h2>
         {content.About ? (
