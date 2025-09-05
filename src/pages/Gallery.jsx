@@ -3,12 +3,12 @@ import axios from 'axios';
 import { useCart } from '../CartContext';
 import ReactMarkdown from 'react-markdown';
 
-// Collection names
+// Collection slugs (must match Strapi exactly)
 const GALLERY_ITEMS_COLLECTION = 'gallery-items';
 const GALLERY_TEXTS_COLLECTION = 'gallery-texts';
 
-// Base Strapi API URL from Vercel env variable (should NOT include /api)
-const STRAPI_API_URL = import.meta.env.VITE_STRAPI_API_URL;
+// Base Strapi API URL from Vite env variable
+const STRAPI_API_URL = import.meta.env.VITE_STRAPI_API_URL || '';
 
 function Gallery() {
   const [photos, setPhotos] = useState([]);
@@ -18,31 +18,37 @@ function Gallery() {
   const { addToCart } = useCart();
 
   useEffect(() => {
+    if (!STRAPI_API_URL) {
+      setError('API URL not configured. Check environment variables.');
+      setLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        // Correct API URLs — no double /api
         const itemsApiUrl = `${STRAPI_API_URL}/api/${GALLERY_ITEMS_COLLECTION}?populate=*`;
         const textsApiUrl = `${STRAPI_API_URL}/api/${GALLERY_TEXTS_COLLECTION}?populate=*`;
 
         // Fetch gallery items
         const itemsResponse = await axios.get(itemsApiUrl);
-        if (itemsResponse.data && Array.isArray(itemsResponse.data.data)) {
+        if (itemsResponse.data?.data && Array.isArray(itemsResponse.data.data)) {
           const formattedPhotos = itemsResponse.data.data.map(item => {
-            const source = item.attributes || {};
+            const attrs = item.attributes || {};
+            let imageUrl = attrs.Image?.data?.attributes?.url || '';
+            // Prepend STRAPI_API_URL if relative path
+            if (imageUrl && !imageUrl.startsWith('http')) {
+              imageUrl = `${STRAPI_API_URL}${imageUrl}`;
+            }
             return {
               id: item.id,
-              title: source.Title || 'Untitled Photo',
-              description: source.Description || 'No description provided.',
-              imageUrl: source.Image?.data?.attributes?.url
-                ? `${STRAPI_API_URL}${source.Image.data.attributes.url}`
-                : 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image+Found',
-              price: source.Price !== undefined && source.Price !== null
-                ? parseFloat(source.Price).toFixed(2)
-                : 'N/A',
-              stripeProductId: source.StripeProductID || 'N/A'
+              title: attrs.Title || 'Untitled Photo',
+              description: attrs.Description || 'No description provided.',
+              imageUrl: imageUrl || 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image+Found',
+              price: attrs.Price != null ? parseFloat(attrs.Price).toFixed(2) : 'N/A',
+              stripeProductId: attrs.StripeProductID || 'N/A',
             };
           });
           setPhotos(formattedPhotos);
@@ -50,13 +56,13 @@ function Gallery() {
           setError('No gallery items found or published.');
         }
 
-        // Fetch gallery page text
+        // Fetch gallery page content
         const textResponse = await axios.get(textsApiUrl);
-        if (textResponse.data && Array.isArray(textResponse.data.data) && textResponse.data.data.length > 0) {
-          const attributes = textResponse.data.data[0].attributes || {};
+        if (textResponse.data?.data?.length > 0) {
+          const attrs = textResponse.data.data[0].attributes || {};
           setGalleryPageContent({
-            title: attributes.Title || 'Our Gallery',
-            body: attributes.Body || 'Add page description in Strapi.'
+            title: attrs.Title || 'Our Gallery',
+            body: attrs.Body || 'Add page description in Strapi.',
           });
         } else {
           setGalleryPageContent({ title: 'Our Gallery', body: 'Add page description in Strapi.' });
@@ -93,7 +99,9 @@ function Gallery() {
       {galleryPageContent && (
         <>
           <h1 className="gallery-title" style={{ textAlign: 'center' }}>{galleryPageContent.title}</h1>
-          <p className="gallery-page-body" style={{ whiteSpace: 'pre-line', textAlign: 'center' }}>{galleryPageContent.body}</p>
+          <ReactMarkdown className="gallery-page-body" style={{ whiteSpace: 'pre-line', textAlign: 'center' }}>
+            {galleryPageContent.body}
+          </ReactMarkdown>
         </>
       )}
 

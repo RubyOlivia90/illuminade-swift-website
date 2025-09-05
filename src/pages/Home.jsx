@@ -7,24 +7,26 @@ function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Corrected to use the environment variable and correct API path
-  const API_ENDPOINT = `${import.meta.env.VITE_STRAPI_API_URL}/api/home-page-contents`;
+  const STRAPI_API_URL = import.meta.env.VITE_STRAPI_API_URL || '';
 
   useEffect(() => {
+    if (!STRAPI_API_URL) {
+      setError('API URL not configured. Check environment variables.');
+      setLoading(false);
+      return;
+    }
+
     const fetchContent = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        const response = await axios.get(API_ENDPOINT);
+        const response = await axios.get(`${STRAPI_API_URL}/api/home-page-contents`);
 
-        if (response.data && Array.isArray(response.data.data) && response.data.data.length > 0) {
+        if (response.data?.data?.length > 0) {
           const firstEntry = response.data.data[0];
-          if (firstEntry) {
-            setContent(firstEntry);
-          } else {
-            setError('First content entry was empty.');
-          }
+          if (firstEntry) setContent(firstEntry.attributes || {});
+          else setError('First content entry was empty.');
         } else {
           setError('No homepage content entries found or published in Strapi.');
         }
@@ -42,10 +44,14 @@ function Home() {
     };
 
     fetchContent();
-  }, [API_ENDPOINT]);
+  }, [STRAPI_API_URL]);
 
-  // Helper to render HeroText (simplified)
-  function renderHeroText(heroText) {
+  if (loading) return <p>Loading homepage content...</p>;
+  if (error) return <p style={{ color: 'red' }}>Error: {error}</p>;
+  if (!content) return <p>No homepage content found after loading. Check console for details.</p>;
+
+  // Helper to render HeroText (supports markdown if desired)
+  const renderHeroText = (heroText) => {
     if (!heroText || !Array.isArray(heroText)) return null;
     return heroText.map((block, idx) => {
       if (block.type === 'paragraph') {
@@ -61,40 +67,42 @@ function Home() {
       }
       return null;
     });
+  };
+
+  // Determine hero image URL safely
+  let heroImageUrl = '';
+  if (content.HeroImage?.data?.attributes?.url) {
+    heroImageUrl = content.HeroImage.data.attributes.url.startsWith('http')
+      ? content.HeroImage.data.attributes.url
+      : `${STRAPI_API_URL}${content.HeroImage.data.attributes.url}`;
   }
-
-  if (loading) return <p>Loading homepage content...</p>;
-  if (error) return <p style={{ color: 'red' }}>Error: {error}</p>;
-  if (!content) return <p>No homepage content found after loading. Check console for details.</p>;
-
-  // Determine background image URL for hero-header (from Strapi)
-  const heroImageUrl = content.HeroImage?.url ? `${import.meta.env.VITE_STRAPI_API_URL}${content.HeroImage.url}` : '';
 
   return (
     <div className="home-page-wrapper">
-
       <header
         className="hero-header"
-        // This style remains to use the dynamic HeroImage from Strapi
         style={{ backgroundImage: heroImageUrl ? `url(${heroImageUrl})` : 'none' }}
       >
         <div className="overlay">
-          <h1 className="hero-title">
-            {content.Title || 'Your Site Title'}
-          </h1>
-          {/* Hero text goes here, under the title, inside the overlay */}
-          <div className="hero-subtitle"> {/* Using hero-subtitle class for styling */}
+          <h1 className="hero-title">{content.Title || 'Your Site Title'}</h1>
+          <div className="hero-subtitle">
             {renderHeroText(content.HeroText)}
           </div>
         </div>
       </header>
 
-      {/* About Me Section - Removed 'yellow-box' class */}
+      {/* About Me Section */}
       <div className="home-container about-section" style={{ marginTop: '2rem' }}>
         <h2>About Me</h2>
-        <p style={{ whiteSpace: 'pre-line', maxWidth: '700px', margin: '0 auto' }}>
-          {content.About || 'Add your about me content in Strapi.'}
-        </p>
+        {content.About ? (
+          <ReactMarkdown style={{ whiteSpace: 'pre-line', maxWidth: '700px', margin: '0 auto' }}>
+            {content.About}
+          </ReactMarkdown>
+        ) : (
+          <p style={{ whiteSpace: 'pre-line', maxWidth: '700px', margin: '0 auto' }}>
+            Add your about me content in Strapi.
+          </p>
+        )}
       </div>
     </div>
   );
