@@ -2,11 +2,11 @@
 import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 
-// Stripe Publishable Key
+// Stripe publishable key
 const STRIPE_PUBLISHABLE_KEY = 'pk_live_51RhxDHI1Z4BL7SCtbuFgB8YLJq08QNSeWkGVsYqJh0TyUn24LJ6mAJB83aIPqi8iVIr2sYEzxI507awSc4PYtSA500v0wMQv6E';
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
-// Cart Context
+// Create the cart context
 export const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
 
@@ -21,6 +21,7 @@ export const CartProvider = ({ children }) => {
     }
   });
 
+  // Persist cart in localStorage
   useEffect(() => {
     try {
       localStorage.setItem('cartItems', JSON.stringify(cartItems));
@@ -29,12 +30,15 @@ export const CartProvider = ({ children }) => {
     }
   }, [cartItems]);
 
+  // Add item
   const addToCart = useCallback((product) => {
     setCartItems(prev => {
-      const existing = prev.find(item => item.id === product.id);
-      if (existing) {
+      const exists = prev.find(item => item.id === product.id);
+      if (exists) {
         return prev.map(item =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
         );
       } else {
         const price = product.price ? parseFloat(product.price).toFixed(2) : '0.00';
@@ -43,46 +47,59 @@ export const CartProvider = ({ children }) => {
     });
   }, []);
 
-  const updateQuantity = useCallback((productId, change) => {
-    setCartItems(prev => prev
-      .map(item => item.id === productId ? { ...item, quantity: Math.max(1, item.quantity + change) } : item)
-      .filter(item => item.quantity > 0)
+  // Update quantity
+  const updateQuantity = useCallback((id, change) => {
+    setCartItems(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, quantity: Math.max(1, item.quantity + change) } : item
+      ).filter(item => item.quantity > 0)
     );
   }, []);
 
-  const removeFromCart = useCallback((productId) => {
-    setCartItems(prev => prev.filter(item => item.id !== productId));
+  // Remove item
+  const removeFromCart = useCallback((id) => {
+    setCartItems(prev => prev.filter(item => item.id !== id));
   }, []);
 
-  const clearCart = useCallback(() => setCartItems([]), []);
+  // Clear cart
+  const clearCart = useCallback(() => {
+    setCartItems([]);
+  }, []);
 
+  // Total price
   const calculateTotal = useCallback(() => {
-    return cartItems.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0).toFixed(2);
+    return cartItems.reduce((total, item) => total + parseFloat(item.price) * item.quantity, 0).toFixed(2);
   }, [cartItems]);
 
-  const getItemQuantity = useCallback((productId) => {
-    const item = cartItems.find(item => item.id === productId);
+  // Quantity of a single item
+  const getItemQuantity = useCallback((id) => {
+    const item = cartItems.find(item => item.id === id);
     return item ? item.quantity : 0;
   }, [cartItems]);
 
+  // Total items
   const getTotalItems = useCallback(() => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   }, [cartItems]);
 
-  // Checkout: sends order via Strapi email endpoint
+  // Checkout (sends email to backend)
   const handleCheckout = async (customerDetails) => {
-    if (!cartItems.length) return alert('Cart is empty!');
-    const requiredFields = ['name', 'email', 'phone', 'address', 'city', 'state', 'zip'];
+    if (cartItems.length === 0) {
+      alert("Cart is empty!");
+      return;
+    }
+    const requiredFields = ['name','email','phone','address','city','state','zip'];
     for (let field of requiredFields) {
-      if (!customerDetails[field]) return alert('Please fill all customer details.');
+      if (!customerDetails[field]) {
+        alert(`Please fill in ${field}`);
+        return;
+      }
     }
 
-    const orderDetails = cartItems
-      .map(item => `${item.title} (x${item.quantity}) - $${(parseFloat(item.price) * item.quantity).toFixed(2)}`)
-      .join('\n');
+    const orderDetails = cartItems.map(item => `${item.title} (x${item.quantity}) - $${(parseFloat(item.price) * item.quantity).toFixed(2)}`).join('\n');
 
     const emailBody = `
-New Order from Website!
+New Order from Website
 
 Customer:
 Name: ${customerDetails.name}
@@ -101,40 +118,33 @@ Total: $${calculateTotal()}
       const response = await fetch(backendUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: customerDetails.name,
-          email: 'iluminadeswiftproton.me@proton.me', // site owner
-          message: emailBody,
-        }),
+        body: JSON.stringify({ name: customerDetails.name, email: 'iluminadeswiftproton.me@proton.me', message: emailBody })
       });
+
       if (response.ok) {
-        alert('Order sent! You will be contacted shortly.');
+        alert("Order sent! Site owner will contact you.");
         clearCart();
       } else {
-        const errData = await response.json();
-        throw new Error(errData.message || 'Failed to send order email.');
+        const data = await response.json();
+        throw new Error(data.message || 'Failed to send order.');
       }
     } catch (err) {
-      console.error('Error sending order:', err);
-      alert(`Checkout failed: ${err.message || 'Try again.'}`);
+      console.error('Checkout error:', err);
+      alert(`Checkout failed: ${err.message}`);
     }
   };
 
-  return (
-    <CartContext.Provider
-      value={{
-        cartItems,
-        addToCart,
-        updateQuantity,
-        removeFromCart,
-        clearCart,
-        calculateTotal,
-        getItemQuantity,
-        getTotalItems,
-        handleCheckout,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
-  );
+  const value = {
+    cartItems,
+    addToCart,
+    updateQuantity,
+    removeFromCart,
+    clearCart,
+    calculateTotal,
+    getItemQuantity,
+    getTotalItems,
+    handleCheckout
+  };
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
