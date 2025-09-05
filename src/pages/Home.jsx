@@ -11,7 +11,7 @@ function Home() {
 
   useEffect(() => {
     if (!STRAPI_API_URL) {
-      setError('API URL not configured. Check environment variables.');
+      setError('API URL not configured.');
       setLoading(false);
       return;
     }
@@ -21,25 +21,17 @@ function Home() {
       setError(null);
 
       try {
-        // Use populate=* to get media files
         const response = await axios.get(`${STRAPI_API_URL}/api/home-page-contents?populate=*`);
 
-        // Handle both find (array) and findOne (object)
-        const entry = Array.isArray(response.data?.data)
-          ? response.data.data[0]?.attributes
-          : response.data?.data?.attributes;
-
-        if (entry) setContent(entry);
-        else setError('No homepage content found or published in Strapi.');
+        const firstEntry = response.data?.data?.[0];
+        if (firstEntry) {
+          setContent(firstEntry); // <- use the object directly
+        } else {
+          setError('No homepage content found or published in Strapi.');
+        }
       } catch (e) {
         console.error(e);
-        if (e.response) {
-          setError(`Server Error ${e.response.status}: ${e.response.statusText}`);
-        } else if (e.request) {
-          setError('No response from server. Is Strapi running and public API accessible?');
-        } else {
-          setError(`Error: ${e.message}`);
-        }
+        setError('Failed to fetch content. See console for details.');
       } finally {
         setLoading(false);
       }
@@ -52,29 +44,10 @@ function Home() {
   if (error) return <p style={{ color: 'red' }}>Error: {error}</p>;
   if (!content) return <p>No homepage content found.</p>;
 
-  const heroImageUrl = content.HeroImage?.data?.attributes?.url
-    ? content.HeroImage.data.attributes.url.startsWith('http')
-      ? content.HeroImage.data.attributes.url
-      : `${STRAPI_API_URL}${content.HeroImage.data.attributes.url}`
+  // Hero Image: take first image in array
+  const heroImageUrl = content.HeroImage?.[0]?.formats?.large?.url
+    ? `${STRAPI_API_URL}${content.HeroImage[0].formats.large.url}`
     : '';
-
-  const renderHeroText = (blocks) => {
-    if (!blocks || !Array.isArray(blocks)) return null;
-    return blocks.map((block, idx) => {
-      if (block.type === 'paragraph') {
-        return (
-          <p key={idx}>
-            {block.children.map((child, cidx) => {
-              if (child.type === 'text') return child.text;
-              if (child.type === 'link') return <a key={cidx} href={child.url}>{child.children[0]?.text}</a>;
-              return null;
-            })}
-          </p>
-        );
-      }
-      return null;
-    });
-  };
 
   return (
     <div className="home-page-wrapper">
@@ -84,7 +57,7 @@ function Home() {
       >
         <div className="overlay">
           <h1 className="hero-title">{content.Title || 'Your Site Title'}</h1>
-          <div className="hero-subtitle">{renderHeroText(content.HeroText)}</div>
+          <div className="hero-subtitle">{content.HeroText}</div>
         </div>
       </header>
 
