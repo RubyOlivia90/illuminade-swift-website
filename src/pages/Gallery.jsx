@@ -1,25 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useCart } from '../CartContext';
 import ReactMarkdown from 'react-markdown';
 
-// Strapi collection slugs
-const GALLERY_ITEMS_COLLECTION = 'gallery-items';
-const GALLERY_TEXTS_COLLECTION = 'gallery-texts';
-
-// Base API URL from environment
-const STRAPI_API_URL = import.meta.env.VITE_STRAPI_API_URL || '';
-
-export default function Gallery() {
-  const [photos, setPhotos] = useState([]);
-  const [pageContent, setPageContent] = useState(null);
+function Gallery() {
+  const [content, setContent] = useState(null); // page text content
+  const [photos, setPhotos] = useState([]);     // gallery items
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { addToCart } = useCart();
 
+  const STRAPI_API_URL = import.meta.env.VITE_STRAPI_API_URL || '';
+  const ITEMS_COLLECTION = 'gallery-items';
+  const TEXT_COLLECTION = 'gallery-texts';
+
   useEffect(() => {
     if (!STRAPI_API_URL) {
-      setError('API URL not configured. Check environment variables.');
+      setError('API URL not configured.');
       setLoading(false);
       return;
     }
@@ -30,43 +27,36 @@ export default function Gallery() {
 
       try {
         // Fetch gallery items
-        const itemsResponse = await axios.get(
-          `${STRAPI_API_URL}/api/${GALLERY_ITEMS_COLLECTION}?populate=*`
-        );
-        const textsResponse = await axios.get(
-          `${STRAPI_API_URL}/api/${GALLERY_TEXTS_COLLECTION}?populate=*`
-        );
+        const itemsResp = await axios.get(`${STRAPI_API_URL}/api/${ITEMS_COLLECTION}?populate=*`);
+        const textResp = await axios.get(`${STRAPI_API_URL}/api/${TEXT_COLLECTION}?populate=*`);
 
-        // Process items
-        if (Array.isArray(itemsResponse.data?.data)) {
-          const formattedPhotos = itemsResponse.data.data.map(item => {
-            const attrs = item.attributes || {};
-            let imageUrl = attrs.Image?.data?.attributes?.url || '';
-            if (imageUrl && !imageUrl.startsWith('http')) {
-              imageUrl = `${STRAPI_API_URL}${imageUrl}`;
-            }
-            return {
-              id: item.id,
-              title: attrs.Title || 'Untitled Photo',
-              description: attrs.Description || 'No description provided.',
-              imageUrl: imageUrl || 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image+Found',
-              price: attrs.Price != null ? parseFloat(attrs.Price).toFixed(2) : 'N/A',
-              stripeProductId: attrs.StripeProductID || 'N/A',
-            };
-          });
-          setPhotos(formattedPhotos);
-        } else {
-          setError('No gallery items found or published.');
-        }
+        // Format gallery items
+        const formattedPhotos = itemsResp.data?.data?.map(item => {
+          const attrs = item.attributes || {};
+          const imgData = attrs.Image?.data?.attributes || {};
+          const imageUrl = imgData.url ? (imgData.url.startsWith('http') ? imgData.url : `${STRAPI_API_URL}${imgData.url}`) : '';
 
-        // Process page content
-        const firstText = textsResponse.data?.data?.[0]?.attributes || {};
-        setPageContent({
+          return {
+            id: item.id,
+            title: attrs.Title || 'Untitled Photo',
+            description: attrs.Description || 'No description provided.',
+            price: attrs.Price != null ? parseFloat(attrs.Price).toFixed(2) : 'N/A',
+            stripeProductId: attrs.StripeProductID || 'N/A',
+            imageUrl: imageUrl || 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image',
+          };
+        }) || [];
+
+        setPhotos(formattedPhotos);
+
+        // Page text content
+        const firstText = textResp.data?.data?.[0]?.attributes || {};
+        setContent({
           title: firstText.Title || 'Our Gallery',
-          body: firstText.Body || 'Add page description in Strapi.',
+          body: firstText.Body || 'Add your gallery page description in Strapi.',
         });
+
       } catch (err) {
-        console.error('Error fetching gallery data:', err);
+        console.error('Gallery fetch error:', err);
         setError('Failed to load gallery content. Check console for details.');
       } finally {
         setLoading(false);
@@ -74,80 +64,40 @@ export default function Gallery() {
     };
 
     fetchData();
-  }, []);
+  }, [STRAPI_API_URL]);
 
-  if (loading) return <div>Loading gallery...</div>;
-  if (error) return <div style={{ color: 'red' }}>Error: {error}</div>;
+  if (loading) return <p>Loading gallery content...</p>;
+  if (error) return <p style={{ color: 'red' }}>Error: {error}</p>;
+  if (!content) return <p>No gallery content found.</p>;
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1280px', margin: 'auto' }}>
+    <div className="home-page-wrapper">
       {/* Page Title & Body */}
-      {pageContent && (
-        <>
-          <h1 style={{ textAlign: 'center' }}>{pageContent.title}</h1>
-          <ReactMarkdown style={{ textAlign: 'center' }}>{pageContent.body}</ReactMarkdown>
-        </>
-      )}
+      <section className="home-container about-section">
+        <h1 style={{ textAlign: 'center' }}>{content.title}</h1>
+        <ReactMarkdown style={{ whiteSpace: 'pre-line', maxWidth: '700px', margin: '0 auto', textAlign: 'center' }}>
+          {content.body}
+        </ReactMarkdown>
+      </section>
 
       {/* Gallery Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          gap: '1.5rem',
-          marginTop: '2rem',
-        }}
-      >
-        {photos.map(photo => (
-          <div
-            key={photo.id}
-            style={{
-              backgroundColor: '#FFCCFF',
-              padding: '1rem',
-              borderRadius: '0.8rem',
-              display: 'flex',
-              flexDirection: 'column',
-              textAlign: 'center',
-            }}
-          >
-            <div
-              style={{
-                overflow: 'hidden',
-                borderRadius: '0.6rem',
-                height: '250px',
-                marginBottom: '0.8rem',
-                position: 'relative',
-                backgroundColor: '#f0f0f0',
-              }}
-            >
-              <img
-                src={photo.imageUrl}
-                alt={photo.title}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
+      <section className="home-container home-photos">
+        <div className="grid-container">
+          {photos.map(photo => (
+            <div className="card" key={photo.id}>
+              {photo.imageUrl && (
+                <div className="hero-header" style={{ backgroundImage: `url(${photo.imageUrl})`, height: '250px', borderRadius: '0.6rem', marginBottom: '0.8rem' }}></div>
+              )}
+              <h2>{photo.title}</h2>
+              <p style={{ minHeight: '3em' }}>{photo.description}</p>
+              {photo.price !== 'N/A' && <div className="price">${photo.price}</div>}
+              <button onClick={() => addToCart(photo)}>Add to Cart</button>
             </div>
-            <h2>{photo.title}</h2>
-            <p style={{ color: '#757575', fontSize: '0.85rem', minHeight: '3em' }}>
-              {photo.description}
-            </p>
-            <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
-              {photo.price !== 'N/A' ? `$${photo.price}` : 'Price: N/A'}
-            </div>
-            <button
-              onClick={() => addToCart(photo)}
-              style={{
-                padding: '0.4rem 0.8rem',
-                border: 'none',
-                borderRadius: '6px',
-                backgroundColor: '#fff',
-                cursor: 'pointer',
-              }}
-            >
-              Add to Cart
-            </button>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
+
+export default Gallery;
