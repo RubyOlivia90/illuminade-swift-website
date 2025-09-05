@@ -23,12 +23,22 @@ function Home() {
       try {
         const response = await axios.get(`${STRAPI_API_URL}/api/home-page-contents`);
 
-        if (response.data?.data?.length > 0) {
-          const firstEntry = response.data.data[0];
-          if (firstEntry) setContent(firstEntry.attributes || {});
-          else setError('First content entry was empty.');
+        const data = response.data?.data;
+
+        let fetchedContent = null;
+
+        // Handle single-type content
+        if (!Array.isArray(data)) {
+          fetchedContent = data?.attributes || null;
+        } else if (Array.isArray(data) && data.length > 0) {
+          // Handle collection-type content
+          fetchedContent = data[0]?.attributes || null;
+        }
+
+        if (!fetchedContent) {
+          setError('No homepage content found or published in Strapi.');
         } else {
-          setError('No homepage content entries found or published in Strapi.');
+          setContent(fetchedContent);
         }
       } catch (e) {
         if (e.response) {
