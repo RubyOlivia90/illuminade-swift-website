@@ -21,32 +21,24 @@ function Home() {
       setError(null);
 
       try {
-        const response = await axios.get(`${STRAPI_API_URL}/api/home-page-contents`);
+        const response = await axios.get(
+          `${STRAPI_API_URL}/api/home-page-contents?populate=*`
+        );
 
-        const data = response.data?.data;
-
-        let fetchedContent = null;
-
-        // Handle single-type content
-        if (!Array.isArray(data)) {
-          fetchedContent = data?.attributes || null;
-        } else if (Array.isArray(data) && data.length > 0) {
-          // Handle collection-type content
-          fetchedContent = data[0]?.attributes || null;
-        }
-
-        if (!fetchedContent) {
-          setError('No homepage content found or published in Strapi.');
+        const entries = response.data?.data;
+        if (entries && entries.length > 0) {
+          const firstEntry = entries[0];
+          setContent(firstEntry.attributes || {});
         } else {
-          setContent(fetchedContent);
+          setError('No homepage content found or published in Strapi.');
         }
       } catch (e) {
         if (e.response) {
-          setError(`Failed to fetch content: Server Error ${e.response.status} - ${e.response.statusText}.`);
+          setError(`Server error ${e.response.status} - ${e.response.statusText}`);
         } else if (e.request) {
-          setError('Failed to fetch content: No response from server. Is Strapi running?');
+          setError('No response from server. Is Strapi running?');
         } else {
-          setError(`Failed to fetch content: ${e.message}`);
+          setError(`Fetch error: ${e.message}`);
         }
       } finally {
         setLoading(false);
@@ -58,9 +50,9 @@ function Home() {
 
   if (loading) return <p>Loading homepage content...</p>;
   if (error) return <p style={{ color: 'red' }}>Error: {error}</p>;
-  if (!content) return <p>No homepage content found after loading. Check console for details.</p>;
+  if (!content) return <p>No homepage content found after loading.</p>;
 
-  // Helper to render HeroText (supports markdown if desired)
+  // Helper to render HeroText (supports structured blocks)
   const renderHeroText = (heroText) => {
     if (!heroText || !Array.isArray(heroText)) return null;
     return heroText.map((block, idx) => {
@@ -69,7 +61,12 @@ function Home() {
           <p key={idx}>
             {block.children.map((child, cidx) => {
               if (child.type === 'text') return child.text;
-              if (child.type === 'link') return <a key={cidx} href={child.url}>{child.children[0]?.text}</a>;
+              if (child.type === 'link')
+                return (
+                  <a key={cidx} href={child.url}>
+                    {child.children[0]?.text}
+                  </a>
+                );
               return null;
             })}
           </p>
@@ -79,7 +76,7 @@ function Home() {
     });
   };
 
-  // Determine hero image URL safely
+  // Determine hero image URL
   let heroImageUrl = '';
   if (content.HeroImage?.data?.attributes?.url) {
     heroImageUrl = content.HeroImage.data.attributes.url.startsWith('http')
@@ -95,9 +92,7 @@ function Home() {
       >
         <div className="overlay">
           <h1 className="hero-title">{content.Title || 'Your Site Title'}</h1>
-          <div className="hero-subtitle">
-            {renderHeroText(content.HeroText)}
-          </div>
+          <div className="hero-subtitle">{renderHeroText(content.HeroText)}</div>
         </div>
       </header>
 
@@ -105,7 +100,9 @@ function Home() {
       <div className="home-container about-section" style={{ marginTop: '2rem' }}>
         <h2>About Me</h2>
         {content.About ? (
-          <ReactMarkdown style={{ whiteSpace: 'pre-line', maxWidth: '700px', margin: '0 auto' }}>
+          <ReactMarkdown
+            style={{ whiteSpace: 'pre-line', maxWidth: '700px', margin: '0 auto' }}
+          >
             {content.About}
           </ReactMarkdown>
         ) : (
