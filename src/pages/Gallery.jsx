@@ -51,7 +51,7 @@ function Gallery() {
         // Page text content
         const firstText = textResp.data?.data?.[0]?.attributes || {};
         setContent({
-          title: firstText.Title || 'Our Gallery',
+          title: firstText.Title || 'My Gallery',
           body: firstText.Body || 'Add your gallery page description in Strapi.',
         });
 
