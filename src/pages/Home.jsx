@@ -25,7 +25,7 @@ function Home() {
 
         const firstEntry = response.data?.data?.[0];
         if (firstEntry) {
-          setContent(firstEntry); // <- use the object directly
+          setContent(firstEntry); 
         } else {
           setError('No homepage content found or published in Strapi.');
         }
@@ -44,7 +44,6 @@ function Home() {
   if (error) return <p style={{ color: 'red' }}>Error: {error}</p>;
   if (!content) return <p>No homepage content found.</p>;
 
-  // Hero Image: take first image in array
   const heroImageUrl = content.HeroImage?.[0]?.formats?.large?.url
     ? `${STRAPI_API_URL}${content.HeroImage[0].formats.large.url}`
     : '';
