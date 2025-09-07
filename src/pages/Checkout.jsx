@@ -2,52 +2,48 @@ import React, { useContext, useState, useEffect } from "react";
 import { CartContext } from "../CartContext";
 
 export default function Checkout() {
-  const { cartItems, clearCart } = useContext(CartContext);
+  const { cartItems, handleCheckout } = useContext(CartContext);
 
-  // Form state
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     address: "",
     city: "",
+    state: "",
     zip: "",
   });
 
-  // Form errors
   const [errors, setErrors] = useState({});
-
-  // Submission state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  // Debug logging for cart
   useEffect(() => {
     console.log("Cart items at checkout:", cartItems);
   }, [cartItems]);
 
-  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     console.log(`Field changed: ${name} = ${value}`);
   };
 
-  // Validate form
   const validate = () => {
     const newErrors = {};
     if (!formData.name) newErrors.name = "Name is required";
     if (!formData.email) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(formData.email))
       newErrors.email = "Email is invalid";
+    if (!formData.phone) newErrors.phone = "Phone is required";
     if (!formData.address) newErrors.address = "Address is required";
     if (!formData.city) newErrors.city = "City is required";
+    if (!formData.state) newErrors.state = "State is required";
     if (!formData.zip) newErrors.zip = "ZIP code is required";
 
     console.log("Validation errors:", newErrors);
     return newErrors;
   };
 
-  // Handle submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
@@ -59,12 +55,9 @@ export default function Checkout() {
 
     setIsSubmitting(true);
     try {
-      // Simulate API call
-      console.log("Submitting order...", formData, cartItems);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await handleCheckout(formData);
       console.log("Order submitted successfully!");
       setSubmitted(true);
-      clearCart();
     } catch (err) {
       console.error("Error submitting order:", err);
     } finally {
@@ -91,14 +84,14 @@ export default function Checkout() {
         ) : (
           cartItems.map((item, idx) => (
             <div key={idx} style={styles.cartItem}>
-              <span>{item.name}</span>
+              <span>{item.title}</span>
               <span>${item.price.toFixed(2)}</span>
             </div>
           ))
         )}
       </div>
 
-      {["name", "email", "address", "city", "zip"].map((field) => (
+      {["name", "email", "phone", "address", "city", "state", "zip"].map((field) => (
         <div key={field} style={styles.fieldWrapper}>
           <label style={styles.label}>{field.charAt(0).toUpperCase() + field.slice(1)}</label>
           <input
@@ -110,6 +103,7 @@ export default function Checkout() {
               ...styles.input,
               borderColor: errors[field] ? "red" : "#ccc",
             }}
+            required
           />
           {errors[field] && <span style={styles.error}>{errors[field]}</span>}
         </div>
@@ -122,7 +116,6 @@ export default function Checkout() {
   );
 }
 
-// Inline styles
 const styles = {
   form: {
     maxWidth: 500,

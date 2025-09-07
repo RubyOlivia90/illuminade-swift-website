@@ -74,24 +74,26 @@ function Gallery() {
     <div className="home-page-wrapper">
       {/* Page Title & Body */}
       <section className="home-container about-section">
-        <h1 style={{ textAlign: 'center' }}>{content.title}</h1>
-        <ReactMarkdown style={{ whiteSpace: 'pre-line', maxWidth: '700px', margin: '0 auto', textAlign: 'center' }}>
+        <h1 className="gallery-title">{content.title}</h1>
+        <ReactMarkdown className="gallery-body">
           {content.body}
         </ReactMarkdown>
       </section>
 
       {/* Gallery Grid */}
       <section className="home-container home-photos">
-        <div className="grid-container">
+        <div className="gallery-grid">
           {photos.map(photo => (
-            <div className="card" key={photo.id}>
+            <div className="gallery-card" key={photo.id}>
               {photo.imageUrl && (
-                <div className="hero-header" style={{ backgroundImage: `url(${photo.imageUrl})`, height: '250px', borderRadius: '0.6rem', marginBottom: '0.8rem' }}></div>
+                <div className="gallery-card-image-wrapper">
+                  <img src={photo.imageUrl} alt={photo.title} className="gallery-card-image" />
+                </div>
               )}
               <h2>{photo.title}</h2>
-              <p style={{ minHeight: '3em' }}>{photo.description}</p>
-              {photo.price !== 'N/A' && <div className="price">${photo.price}</div>}
-              <button onClick={() => addToCart(photo)}>Add to Cart</button>
+              <p className="gallery-card-description">{photo.description}</p>
+              {photo.price !== 'N/A' && <div className="gallery-card-price">${photo.price}</div>}
+              <button className="gallery-card-button" onClick={() => addToCart(photo)}>Add to Cart</button>
             </div>
           ))}
         </div>

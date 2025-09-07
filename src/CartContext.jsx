@@ -2,9 +2,8 @@
 import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 
-// Stripe publishable key
 const STRIPE_PUBLISHABLE_KEY =
-  'pk_live_51RhxDHI1Z4BL7SCtbuFgB8YLJq08QNSeWkGVsYqJh0TyUn24LJ6mAJB83aIPqi8iVIr2sYEzxI507awSc4PYtSA500v0wMQv6E';
+  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 export const CartContext = createContext();

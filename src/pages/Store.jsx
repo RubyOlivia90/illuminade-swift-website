@@ -75,77 +75,38 @@ export default function Store() {
     };
 
     fetchData();
-  }, []);
+  }, [STRAPI_API_URL]);
 
   if (loading) return <div>Loading store...</div>;
   if (error) return <div style={{ color: 'red' }}>Error: {error}</div>;
 
   return (
-    <div className="store-container" style={{ padding: '2rem', maxWidth: '1280px', margin: 'auto' }}>
+    <div className="store-page-container">
       {pageContent && (
         <>
-          <h1 style={{ textAlign: 'center' }}>{pageContent.title}</h1>
-          <ReactMarkdown style={{ textAlign: 'center', whiteSpace: 'pre-line' }}>
+          <h1 className="store-title">{pageContent.title}</h1>
+          <ReactMarkdown className="store-body">
             {pageContent.body}
           </ReactMarkdown>
         </>
       )}
 
-      <div
-        className="store-grid"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-          gap: '1.5rem',
-          marginTop: '2rem',
-        }}
-      >
+      <div className="store-grid">
         {products.map(product => (
-          <div
-            key={product.id}
-            className="store-card"
-            style={{
-              backgroundColor: '#FFEEFF',
-              padding: '1rem',
-              borderRadius: '0.8rem',
-              display: 'flex',
-              flexDirection: 'column',
-              textAlign: 'center',
-            }}
-          >
-            <div
-              style={{
-                overflow: 'hidden',
-                borderRadius: '0.6rem',
-                height: '250px',
-                marginBottom: '0.8rem',
-                position: 'relative',
-                backgroundColor: '#f0f0f0',
-              }}
-            >
+          <div key={product.id} className="store-card">
+            <div className="store-card-image-wrapper">
               <img
                 src={product.imageUrl}
                 alt={product.title}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                className="store-card-image"
               />
             </div>
             <h2>{product.title}</h2>
-            <p style={{ whiteSpace: 'pre-line', color: '#757575', fontSize: '0.85rem', minHeight: '3em' }}>
-              {product.description}
-            </p>
-            <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
+            <p className="store-card-description">{product.description}</p>
+            <div className="store-card-price">
               {product.price !== 'N/A' ? `$${product.price}` : 'Price: N/A'}
             </div>
-            <button
-              onClick={() => addToCart(product)}
-              style={{
-                padding: '0.4rem 0.8rem',
-                border: 'none',
-                borderRadius: '6px',
-                backgroundColor: '#fff',
-                cursor: 'pointer',
-              }}
-            >
+            <button className="store-card-button" onClick={() => addToCart(product)}>
               Add to Cart
             </button>
           </div>
