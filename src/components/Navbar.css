@@ -109,5 +109,8 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    background-color: #333; /* Explicit background color for visibility */
+    padding: 5px; /* Add some padding to make the button clickable */
+    border-radius: 5px;
   }
 }
