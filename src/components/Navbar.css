@@ -48,6 +48,9 @@
   color: #f5f5f5;
   font-size: 1rem;
   transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .navbar-links a:hover {

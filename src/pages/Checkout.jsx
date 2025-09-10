@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 import { CartContext } from "../CartContext";
 
 export default function Checkout() {
-  const { cartItems, handleCheckout } = useContext(CartContext);
+  const { cartItems, handleCheckout, clearCart } = useContext(CartContext);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -89,6 +89,7 @@ export default function Checkout() {
             </div>
           ))
         )}
+        <button type="button" onClick={clearCart} style={{...styles.button, marginTop: '1rem', background: 'gray'}}>Clear Cart</button>
       </div>
 
       {["name", "email", "phone", "address", "city", "state", "zip"].map((field) => (

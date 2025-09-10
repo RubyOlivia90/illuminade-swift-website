@@ -131,3 +131,18 @@ button:hover, .cta-button:hover {
   color: #ccc;
   font-size: 0.9rem;
 }
+
+.hero-header {
+  position: relative;
+  height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #fff;
+  font-family: 'Cormorant Garamond', serif;
+  padding: 0 1rem;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
