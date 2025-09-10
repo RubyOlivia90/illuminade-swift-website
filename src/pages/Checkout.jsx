@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 import { CartContext } from "../CartContext";
 
 export default function Checkout() {
-  const { cartItems, handleCheckout, clearCart } = useContext(CartContext);
+  const { cartItems, handleCheckout } = useContext(CartContext);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -67,7 +67,7 @@ export default function Checkout() {
 
   if (submitted) {
     return (
-      <div style={styles.confirmation}>
+      <div style={{ ...styles.confirmation, color: '#f5f5f5' }}>
         <h2>Thank you for your order!</h2>
         <p>We’ll send confirmation to {formData.email}</p>
       </div>
@@ -76,25 +76,24 @@ export default function Checkout() {
 
   return (
     <form style={styles.form} onSubmit={handleSubmit}>
-      <h2>Checkout</h2>
-      <div style={styles.cartSummary}>
-        <h3>Cart Items</h3>
+      <h2 style={{ color: '#f5f5f5' }}>Checkout</h2>
+      <div style={{ ...styles.cartSummary, background: '#333' }}>
+        <h3 style={{ color: '#f5f5f5' }}>Cart Items</h3>
         {cartItems.length === 0 ? (
-          <p>Your cart is empty</p>
+          <p style={{ color: '#ccc' }}>Your cart is empty</p>
         ) : (
           cartItems.map((item, idx) => (
-            <div key={idx} style={styles.cartItem}>
-              <span>{item.title}</span>
-              <span>${item.price.toFixed(2)}</span>
+            <div key={idx} style={{ ...styles.cartItem, borderBottom: '1px solid #444' }}>
+              <span style={{ color: '#f5f5f5' }}>{item.title}</span>
+              <span style={{ color: '#f5f5f5' }}>${item.price.toFixed(2)}</span>
             </div>
           ))
         )}
-        <button type="button" onClick={clearCart} style={{...styles.button, marginTop: '1rem', background: 'gray'}}>Clear Cart</button>
       </div>
 
       {["name", "email", "phone", "address", "city", "state", "zip"].map((field) => (
         <div key={field} style={styles.fieldWrapper}>
-          <label style={styles.label}>{field.charAt(0).toUpperCase() + field.slice(1)}</label>
+          <label style={{ ...styles.label, color: '#f5f5f5' }}>{field.charAt(0).toUpperCase() + field.slice(1)}</label>
           <input
             type={field === "email" ? "email" : "text"}
             name={field}
@@ -102,7 +101,9 @@ export default function Checkout() {
             onChange={handleChange}
             style={{
               ...styles.input,
-              borderColor: errors[field] ? "red" : "#ccc",
+              borderColor: errors[field] ? "red" : "#444",
+              background: '#222',
+              color: '#f5f5f5'
             }}
             required
           />
@@ -122,23 +123,23 @@ const styles = {
     maxWidth: 500,
     margin: "0 auto",
     padding: 20,
-    border: "1px solid #ddd",
+    border: "1px solid #444",
     borderRadius: 8,
     boxShadow: "0 0 10px rgba(0,0,0,0.1)",
     fontFamily: "sans-serif",
+    background: '#1a1a1a',
   },
   cartSummary: {
     marginBottom: 20,
     padding: 10,
-    border: "1px solid #eee",
+    border: "1px solid #444",
     borderRadius: 4,
-    background: "#fafafa",
   },
   cartItem: {
     display: "flex",
     justifyContent: "space-between",
     padding: "5px 0",
-    borderBottom: "1px solid #eee",
+    borderBottom: "1px solid #444",
   },
   fieldWrapper: {
     marginBottom: 15,
@@ -154,6 +155,8 @@ const styles = {
     borderRadius: 4,
     border: "1px solid #ccc",
     fontSize: 16,
+    background: '#222',
+    color: '#f5f5f5',
   },
   error: {
     color: "red",
@@ -164,8 +167,8 @@ const styles = {
     padding: 12,
     borderRadius: 4,
     border: "none",
-    background: "#0070f3",
-    color: "white",
+    background: "#a8e6cf",
+    color: "#1a1a1a",
     fontSize: 16,
     cursor: "pointer",
   },

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import '../index.css';
-import './Footer.css'; // New import for footer specific styles
+import '../footer.css';
 
 const Footer = () => {
   return (
