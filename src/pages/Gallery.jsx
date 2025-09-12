@@ -73,9 +73,9 @@ function Gallery() {
   return (
     <div className="home-page-wrapper">
       {/* Page Title & Body */}
-      <section className="home-container about-section">
+      <section className="home-container about-section" style={{ textAlign: 'center' }}>
         <h1 className="gallery-title">{content.title}</h1>
-        <ReactMarkdown className="gallery-body">
+        <ReactMarkdown>
           {content.body}
         </ReactMarkdown>
       </section>

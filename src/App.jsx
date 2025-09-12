@@ -1,16 +1,17 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Gallery from './pages/Gallery';
 import Store from './pages/Store';
 import Contact from './pages/Contact';
 import Checkout from './pages/Checkout';
+import DownloadPage from './pages/DownloadPage';
 import Navbar from './components/Navbar';
-import Footer from './components/Footer'; // Import the new Footer component
+import Footer from './components/Footer';
 
 const App = () => {
   return (
-    <Router>
+    <>
       <Navbar />
       <main style={{ paddingTop: '5rem' }}>
         <Routes>
@@ -19,10 +20,11 @@ const App = () => {
           <Route path="/store" element={<Store />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/download" element={<DownloadPage />} />
         </Routes>
       </main>
-      <Footer /> {[]}
-    </Router>
+      <Footer />
+    </>
   );
 };
 

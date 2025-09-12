@@ -1,6 +1,7 @@
 // src/CartContext.jsx
 import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate hook
 
 const STRIPE_PUBLISHABLE_KEY =
   import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
@@ -10,6 +11,7 @@ export const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
+  const navigate = useNavigate(); // Initialize useNavigate
   const [cartItems, setCartItems] = useState(() => {
     try {
       const stored = localStorage.getItem('cartItems');
@@ -100,13 +102,6 @@ export const CartProvider = ({ children }) => {
       }
     }
 
-    const orderDetails = cartItems
-      .map(
-        (item) =>
-          `${item.title} (x${item.quantity}) - $${(item.price * item.quantity).toFixed(2)}`
-      )
-      .join('\n');
-
     const emailBody = `
 New Order from Website
 
@@ -117,10 +112,16 @@ Phone: ${customerDetails.phone}
 Address: ${customerDetails.address}, ${customerDetails.city}, ${customerDetails.state}, ${customerDetails.zip}
 
 Order:
-${orderDetails}
+${cartItems.map(
+  (item) =>
+    `${item.title} (x${item.quantity}) - $${(item.price * item.quantity).toFixed(2)}`
+).join('\n')}
 
 Total: $${calculateTotal()}
 `;
+    // Filter for the first gallery item
+    const galleryItems = cartItems.filter(item => item.downloadable);
+    const downloadLink = galleryItems.length > 0 ? galleryItems[0].downloadUrl : null;
 
     try {
       const backendUrl = `${import.meta.env.VITE_STRAPI_API_URL}/api/email/send`;
@@ -129,8 +130,9 @@ Total: $${calculateTotal()}
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: customerDetails.name,
-          email: 'iluminadeswiftproton.me@proton.me',
-          message: emailBody
+          email: customerDetails.email, // Use customer's email
+          message: emailBody,
+          downloadLink, // Include download link in email
         })
       });
 
@@ -139,7 +141,11 @@ Total: $${calculateTotal()}
         throw new Error(data.message || 'Failed to send order.');
       }
 
-      alert('Order sent! Site owner will contact you.');
+      alert('Order sent! A download link has been sent to your email.');
+      if (downloadLink) {
+        navigate('/download', { state: { imageUrl: galleryItems[0].imageUrl, title: galleryItems[0].title } });
+      }
+
       clearCart();
     } catch (err) {
       console.error('Checkout error:', err);

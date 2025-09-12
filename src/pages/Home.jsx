@@ -60,7 +60,10 @@ function Home() {
         </div>
       </header>
 
-      <section className="home-container about-section" style={{ marginTop: '2rem' }}>
+      <section 
+        className="home-container about-section" 
+        style={{ marginTop: '2rem', textAlign: 'center' }} // Added inline style to center text
+      >
         <h2>About Me</h2>
         {content.About ? (
           <ReactMarkdown style={{ whiteSpace: 'pre-line', maxWidth: '700px', margin: '0 auto' }}>
