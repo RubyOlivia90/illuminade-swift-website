@@ -7,4 +7,13 @@ module.exports = ({ env }) => ({
   webhooks: {
     populateRelations: env.bool('WEBHOOKS_POPULATE_RELATIONS', false),
   },
+  url: env('PUBLIC_URL', 'http://localhost:1337'),
+  settings: {
+    cors: {
+      enabled: true,
+      origin: ['http://localhost:5173', 'http://localhost:1337'],
+      headers: ['*'],
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
+    },
+  },
 });
