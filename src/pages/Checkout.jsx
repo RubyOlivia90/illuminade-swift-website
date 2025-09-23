@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 import { CartContext } from "../CartContext";
 
 export default function Checkout() {
-  const { cartItems, handleCheckout } = useContext(CartContext);
+  const { cartItems, handleCheckout, clearCart, calculateTotal } = useContext(CartContext);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -25,22 +25,18 @@ export default function Checkout() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    console.log(`Field changed: ${name} = ${value}`);
   };
 
   const validate = () => {
     const newErrors = {};
     if (!formData.name) newErrors.name = "Name is required";
     if (!formData.email) newErrors.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(formData.email))
-      newErrors.email = "Email is invalid";
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid";
     if (!formData.phone) newErrors.phone = "Phone is required";
     if (!formData.address) newErrors.address = "Address is required";
     if (!formData.city) newErrors.city = "City is required";
     if (!formData.state) newErrors.state = "State is required";
     if (!formData.zip) newErrors.zip = "ZIP code is required";
-
-    console.log("Validation errors:", newErrors);
     return newErrors;
   };
 
@@ -49,17 +45,16 @@ export default function Checkout() {
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-      console.log("Form submission prevented due to errors");
       return;
     }
 
     setIsSubmitting(true);
     try {
       await handleCheckout(formData);
-      console.log("Order submitted successfully!");
       setSubmitted(true);
     } catch (err) {
       console.error("Error submitting order:", err);
+      alert("Checkout failed. See console for details.");
     } finally {
       setIsSubmitting(false);
     }
@@ -67,7 +62,7 @@ export default function Checkout() {
 
   if (submitted) {
     return (
-      <div style={{ ...styles.confirmation, color: '#f5f5f5' }}>
+      <div style={{ textAlign: "center", padding: 50, color: "#f5f5f5" }}>
         <h2>Thank you for your order!</h2>
         <p>We’ll send confirmation to {formData.email}</p>
       </div>
@@ -77,23 +72,48 @@ export default function Checkout() {
   return (
     <form style={styles.form} onSubmit={handleSubmit}>
       <h2 style={{ color: '#f5f5f5' }}>Checkout</h2>
+
+      {/* Cart Summary */}
       <div style={{ ...styles.cartSummary, background: '#333' }}>
-        <h3 style={{ color: '#f5f5f5' }}>Cart Items</h3>
+        <h3 style={{ color: '#f5f5f5' }}>Cart Items ({cartItems.length})</h3>
         {cartItems.length === 0 ? (
           <p style={{ color: '#ccc' }}>Your cart is empty</p>
         ) : (
-          cartItems.map((item, idx) => (
-            <div key={idx} style={{ ...styles.cartItem, borderBottom: '1px solid #444' }}>
-              <span style={{ color: '#f5f5f5' }}>{item.title}</span>
-              <span style={{ color: '#f5f5f5' }}>${item.price.toFixed(2)}</span>
+          <>
+            {cartItems.map((item, idx) => (
+              <div key={idx} style={styles.cartItem}>
+                <span style={{ color: '#f5f5f5' }}>{item.title}</span>
+                <span style={{ color: '#f5f5f5' }}>${Number(item.price).toFixed(2)}</span>
+              </div>
+            ))}
+            <div style={{ marginTop: 10, fontWeight: 'bold', color: '#f5f5f5' }}>
+              Total: ${calculateTotal()}
             </div>
-          ))
+            <button
+              type="button"
+              onClick={clearCart}
+              style={{
+                marginTop: 10,
+                padding: "8px 12px",
+                borderRadius: 4,
+                border: "none",
+                background: "#ff6b6b",
+                color: "#fff",
+                cursor: "pointer",
+              }}
+            >
+              Clear Cart
+            </button>
+          </>
         )}
       </div>
 
+      {/* Checkout Form */}
       {["name", "email", "phone", "address", "city", "state", "zip"].map((field) => (
         <div key={field} style={styles.fieldWrapper}>
-          <label style={{ ...styles.label, color: '#f5f5f5' }}>{field.charAt(0).toUpperCase() + field.slice(1)}</label>
+          <label style={{ ...styles.label, color: '#f5f5f5' }}>
+            {field.charAt(0).toUpperCase() + field.slice(1)}
+          </label>
           <input
             type={field === "email" ? "email" : "text"}
             name={field}
@@ -111,7 +131,7 @@ export default function Checkout() {
         </div>
       ))}
 
-      <button type="submit" style={styles.button} disabled={isSubmitting}>
+      <button type="submit" style={styles.button} disabled={isSubmitting || cartItems.length === 0}>
         {isSubmitting ? "Submitting..." : "Place Order"}
       </button>
     </form>
@@ -171,9 +191,5 @@ const styles = {
     color: "#1a1a1a",
     fontSize: 16,
     cursor: "pointer",
-  },
-  confirmation: {
-    textAlign: "center",
-    padding: 50,
   },
 };

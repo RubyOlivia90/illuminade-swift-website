@@ -1,17 +1,11 @@
-// src/CartContext.jsx
 import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate hook
-
-const STRIPE_PUBLISHABLE_KEY =
-  import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
+import { useNavigate } from 'react-router-dom';
 
 export const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
   const [cartItems, setCartItems] = useState(() => {
     try {
       const stored = localStorage.getItem('cartItems');
@@ -21,7 +15,6 @@ export const CartProvider = ({ children }) => {
     }
   });
 
-  // Persist cart in localStorage
   useEffect(() => {
     try {
       localStorage.setItem('cartItems', JSON.stringify(cartItems));
@@ -30,10 +23,10 @@ export const CartProvider = ({ children }) => {
     }
   }, [cartItems]);
 
-  // Add product to cart
   const addToCart = useCallback((product) => {
     setCartItems((prev) => {
       const exists = prev.find((item) => item.id === product.id);
+      const price = product.price != null ? parseFloat(product.price) : 0;
       if (exists) {
         return prev.map((item) =>
           item.id === product.id
@@ -41,13 +34,11 @@ export const CartProvider = ({ children }) => {
             : item
         );
       } else {
-        const price = parseFloat(product.price || 0);
         return [...prev, { ...product, quantity: 1, price }];
       }
     });
   }, []);
 
-  // Update quantity
   const updateQuantity = useCallback((id, change) => {
     setCartItems((prev) =>
       prev
@@ -60,34 +51,28 @@ export const CartProvider = ({ children }) => {
     );
   }, []);
 
-  // Remove item
   const removeFromCart = useCallback((id) => {
     setCartItems((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
-  // Clear cart
   const clearCart = useCallback(() => setCartItems([]), []);
 
-  // Total price
   const calculateTotal = useCallback(() => {
     return cartItems
-      .reduce((total, item) => total + item.price * item.quantity, 0)
+      .reduce((total, item) => total + (item.price || 0) * item.quantity, 0)
       .toFixed(2);
   }, [cartItems]);
 
-  // Quantity of a single item
   const getItemQuantity = useCallback(
     (id) => cartItems.find((item) => item.id === id)?.quantity || 0,
     [cartItems]
   );
 
-  // Total items in cart
   const getTotalItems = useCallback(
     () => cartItems.reduce((total, item) => total + item.quantity, 0),
     [cartItems]
   );
 
-  // Checkout: sends order email
   const handleCheckout = async (customerDetails) => {
     if (!cartItems.length) {
       alert('Cart is empty!');
@@ -102,55 +87,10 @@ export const CartProvider = ({ children }) => {
       }
     }
 
-    const emailBody = `
-New Order from Website
-
-Customer:
-Name: ${customerDetails.name}
-Email: ${customerDetails.email}
-Phone: ${customerDetails.phone}
-Address: ${customerDetails.address}, ${customerDetails.city}, ${customerDetails.state}, ${customerDetails.zip}
-
-Order:
-${cartItems.map(
-  (item) =>
-    `${item.title} (x${item.quantity}) - $${(item.price * item.quantity).toFixed(2)}`
-).join('\n')}
-
-Total: $${calculateTotal()}
-`;
-    // Filter for the first gallery item
-    const galleryItems = cartItems.filter(item => item.downloadable);
-    const downloadLink = galleryItems.length > 0 ? galleryItems[0].downloadUrl : null;
-
-    try {
-      const backendUrl = `${import.meta.env.VITE_STRAPI_API_URL}/api/email/send`;
-      const response = await fetch(backendUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: customerDetails.name,
-          email: customerDetails.email, // Use customer's email
-          message: emailBody,
-          downloadLink, // Include download link in email
-        })
-      });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.message || 'Failed to send order.');
-      }
-
-      alert('Order sent! A download link has been sent to your email.');
-      if (downloadLink) {
-        navigate('/download', { state: { imageUrl: galleryItems[0].imageUrl, title: galleryItems[0].title } });
-      }
-
-      clearCart();
-    } catch (err) {
-      console.error('Checkout error:', err);
-      alert(`Checkout failed: ${err.message}`);
-    }
+    // Here you can implement your backend call or Stripe logic
+    alert('Checkout successful!');
+    clearCart();
+    navigate('/');
   };
 
   const value = {

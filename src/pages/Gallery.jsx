@@ -4,15 +4,13 @@ import { useCart } from '../CartContext';
 import ReactMarkdown from 'react-markdown';
 
 function Gallery() {
-  const [content, setContent] = useState(null); // page text content
-  const [photos, setPhotos] = useState([]);     // gallery items
+  const [pageContent, setPageContent] = useState(null);
+  const [galleryItems, setGalleryItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { addToCart } = useCart();
 
   const STRAPI_API_URL = import.meta.env.VITE_STRAPI_API_URL || '';
-  const ITEMS_COLLECTION = 'gallery-items';
-  const TEXT_COLLECTION = 'gallery-texts';
 
   useEffect(() => {
     if (!STRAPI_API_URL) {
@@ -26,37 +24,47 @@ function Gallery() {
       setError(null);
 
       try {
-        // Fetch gallery items
-        const itemsResp = await axios.get(`${STRAPI_API_URL}/api/${ITEMS_COLLECTION}?populate=*`);
-        const textResp = await axios.get(`${STRAPI_API_URL}/api/${TEXT_COLLECTION}?populate=*`);
+        const [itemsResp, textResp] = await Promise.all([
+          axios.get(`${STRAPI_API_URL}/api/gallery-items?populate=*`),
+          axios.get(`${STRAPI_API_URL}/api/gallery-texts`)
+        ]);
 
-        // Format gallery items
-        const formattedPhotos = itemsResp.data?.data?.map(item => {
-          const attrs = item.attributes || {};
-          const imgData = attrs.Image?.data?.attributes || {};
-          const imageUrl = imgData.url ? (imgData.url.startsWith('http') ? imgData.url : `${STRAPI_API_URL}${imgData.url}`) : '';
+        const formattedItems = itemsResp.data?.data?.map(item => {
+          // Handle single or multiple images
+          let imageUrl = 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image';
+          if (item.Image) {
+            if (Array.isArray(item.Image) && item.Image.length > 0) {
+              imageUrl = item.Image[0]?.url || imageUrl;
+            } else if (item.Image.url) {
+              imageUrl = item.Image.url;
+            }
+            if (!imageUrl.startsWith('http')) {
+              imageUrl = `${STRAPI_API_URL}${imageUrl}`;
+            }
+          }
 
           return {
             id: item.id,
-            title: attrs.Title || 'Untitled Photo',
-            description: attrs.Description || 'No description provided.',
-            price: attrs.Price != null ? parseFloat(attrs.Price).toFixed(2) : 'N/A',
-            stripeProductId: attrs.StripeProductID || 'N/A',
-            imageUrl: imageUrl || 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image',
+            title: item.Title || 'Untitled Photo',
+            description: item.Description || 'No description provided.',
+            price: item.Price != null ? parseFloat(item.Price).toFixed(2) : 'N/A',
+            stripeProductId: item.StripeProductID || 'N/A',
+            imageUrl,
           };
         }) || [];
 
-        setPhotos(formattedPhotos);
+        setGalleryItems(formattedItems);
 
-        // Page text content
-        const firstText = textResp.data?.data?.[0]?.attributes || {};
-        setContent({
-          title: firstText.Title || 'My Gallery',
-          body: firstText.Body || 'Add your gallery page description in Strapi.',
-        });
+        const firstText = textResp.data?.data?.[0];
+        if (firstText) {
+          setPageContent({
+            title: firstText.Title || 'My Gallery',
+            body: firstText.Body || 'Add your gallery page description in Strapi.',
+          });
+        }
 
       } catch (err) {
-        console.error('Gallery fetch error:', err);
+        console.error('Gallery fetch error:', err.response?.data || err.message);
         setError('Failed to load gallery content. Check console for details.');
       } finally {
         setLoading(false);
@@ -68,35 +76,30 @@ function Gallery() {
 
   if (loading) return <p>Loading gallery content...</p>;
   if (error) return <p style={{ color: 'red' }}>Error: {error}</p>;
-  if (!content) return <p>No gallery content found.</p>;
 
   return (
-    <div className="home-page-wrapper">
-      {/* Page Title & Body */}
-      <section className="home-container about-section" style={{ textAlign: 'center' }}>
-        <h1 className="gallery-title">{content.title}</h1>
-        <ReactMarkdown>
-          {content.body}
-        </ReactMarkdown>
-      </section>
+    <div className="gallery-page-container">
+      {/* Gallery Page Title & Body */}
+      {pageContent && (
+        <section className="gallery-header">
+          <h1 className="gallery-title">{pageContent.title}</h1>
+          <div className="gallery-body">
+            <ReactMarkdown>{pageContent.body}</ReactMarkdown>
+          </div>
+        </section>
+      )}
 
       {/* Gallery Grid */}
-      <section className="home-container home-photos">
-        <div className="gallery-grid">
-          {photos.map(photo => (
-            <div className="gallery-card" key={photo.id}>
-              {photo.imageUrl && (
-                <div className="gallery-card-image-wrapper">
-                  <img src={photo.imageUrl} alt={photo.title} className="gallery-card-image" />
-                </div>
-              )}
-              <h2>{photo.title}</h2>
-              <p className="gallery-card-description">{photo.description}</p>
-              {photo.price !== 'N/A' && <div className="gallery-card-price">${photo.price}</div>}
-              <button className="gallery-card-button" onClick={() => addToCart(photo)}>Add to Cart</button>
-            </div>
-          ))}
-        </div>
+      <section className="gallery-grid">
+        {galleryItems.map(item => (
+          <div className="gallery-card" key={item.id}>
+            <img src={item.imageUrl} alt={item.title} />
+            <h2>{item.title}</h2>
+            <p>{item.description}</p>
+            {item.price !== 'N/A' && <p className="price">${item.price}</p>}
+            <button onClick={() => addToCart(item)}>Add to Cart</button>
+          </div>
+        ))}
       </section>
     </div>
   );
