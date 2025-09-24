@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // Make sure this is imported
 
 export const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
@@ -86,11 +87,22 @@ export const CartProvider = ({ children }) => {
         return;
       }
     }
+    
+    // Redirect to Stripe checkout
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_STRAPI_API_URL}/api/orders`,
+        { cartItems, customerDetails },
+        { headers: { 'Content-Type': 'application/json' } }
+      );
 
-    // Here you can implement your backend call or Stripe logic
-    alert('Checkout successful!');
-    clearCart();
-    navigate('/');
+      if (response.data.url) {
+        window.location.href = response.data.url;
+      }
+    } catch (err) {
+      console.error("Error creating Stripe session:", err);
+      alert("Checkout failed. Please try again.");
+    }
   };
 
   const value = {
