@@ -1,39 +1,57 @@
-'use strict';
+// src/api/order/controllers/order.js
 
-const { createCoreController } = require('@strapi/strapi').factories;
-// @ts-ignore
-const Stripe = require('stripe');
+import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2022-11-15' });
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-module.exports = createCoreController('api::order.order', ({ strapi }) => ({
-  // ✅ This is your custom action
-  async createSession(ctx) {
-    const { items, customer } = ctx.request.body;
-
-    if (!items || !items.length) {
-      return ctx.throw(400, 'No items provided');
-    }
-
-    const line_items = items.map(item => ({
-      price: item.stripeProductId, // must be a Stripe Price ID
-      quantity: item.quantity || 1,
-    }));
+export default {
+  async create(ctx) {
+    const { cartItems } = ctx.request.body;
+    const STRAPI_API_URL = process.env.VITE_STRAPI_API_URL;
 
     try {
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        line_items,
-        mode: 'payment',
-        customer_email: customer.email,
-        success_url: `${process.env.FRONTEND_URL}/download?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.FRONTEND_URL}/checkout`,
+      // Fetch product data from Strapi
+      const products = await strapi.db.query('api::product.product').findMany();
+
+      const lineItems = cartItems.map(item => {
+        const product = products.find(
+          p => p.StripeProductID === item.stripeProductId
+        );
+
+        if (!product) {
+          throw new Error(`Product not found for Stripe ID: ${item.stripeProductId}`);
+        }
+
+        return {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: item.title,
+              images: [`${STRAPI_API_URL}${product.ProductImage.url}`],
+            },
+            unit_amount: Math.round(product.Price * 100), // in cents
+          },
+          quantity: item.quantity,
+        };
       });
 
-      return { url: session.url };
-    } catch (err) {
-      console.error('Stripe checkout session error:', err);
-      ctx.throw(500, err.message);
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        shipping_address_collection: {
+          allowed_countries: ['US', 'CA'],
+        },
+        line_items: lineItems,
+        mode: 'payment',
+        success_url: `${STRAPI_API_URL}/download?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${STRAPI_API_URL}/checkout`,
+      });
+
+      ctx.body = { url: session.url };
+
+    } catch (error) {
+      console.error('Stripe Checkout Error:', error);
+      ctx.response.status = 500;
+      ctx.body = { error: error.message };
     }
   },
-}));
+};

@@ -23,11 +23,12 @@
     "@strapi/strapi": "^5.23.0",
     "@stripe/stripe-js": "^7.5.0",
     "better-sqlite3": "11.3.0",
+    "nodemailer": "^7.0.6",
     "pg": "^8.16.3",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-router-dom": "^6.0.0",
-    "stripe": "^18.3.0",
+    "stripe": "^18.5.0",
     "styled-components": "^6.0.0"
   },
   "engines": {
