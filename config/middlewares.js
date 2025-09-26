@@ -4,8 +4,13 @@ module.exports = [
   {
     name: 'strapi::cors',
     config: {
-      origin: [''],
-      headers: ['Content-Type', 'Authorization'],
+      headers: ['Content-Type', 'Authorization', 'Accept', 'Origin'],
+      origin: [
+        'http://localhost:1337', // For local development
+        'http://localhost:5173', // For local development with Vite
+        process.env.CORS_ORIGIN, // For your deployed frontend
+      ],
+     
     },
   },
   'strapi::poweredBy',
