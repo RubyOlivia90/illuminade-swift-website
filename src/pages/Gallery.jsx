@@ -26,7 +26,6 @@ function Gallery() {
       try {
         const [itemsResp, textResp] = await Promise.all([
           axios.get(`${STRAPI_API_URL}/api/gallery-items?populate=*`),
-          // FIX: Changed 'gallery-texts' to the singular 'gallery-text'
           axios.get(`${STRAPI_API_URL}/api/gallery-text`)
         ]);
 
@@ -34,7 +33,6 @@ function Gallery() {
           itemsResp.data?.data?.map(item => {
             const attrs = item.attributes || {};
 
-            // ✅ Handle Strapi v4/v5 image format
             let imageUrl =
               'https://placehold.co/600x400/CCCCCC/333333?text=No+Image';
             const imgData = attrs.Image?.data;
@@ -65,7 +63,7 @@ function Gallery() {
 
         setGalleryItems(formattedItems);
 
-        // ✅ Handle text content
+        // FIX: Changed data access path for single type content
         const firstText = textResp.data?.data?.attributes;
         if (firstText) {
           setPageContent({
