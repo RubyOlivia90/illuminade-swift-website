@@ -24,13 +24,12 @@ function Gallery() {
       setError(null);
 
       try {
-        // Fetch both gallery items and text in parallel
         const [itemsResp, textResp] = await Promise.all([
           axios.get(`${STRAPI_API_URL}/api/gallery-items?populate=*`),
+          // CORRECT: Use plural endpoint for the Collection Type: /api/gallery-texts
           axios.get(`${STRAPI_API_URL}/api/gallery-texts?populate=*`)
         ]);
 
-        // Process gallery items (Collection Type)
         const formattedItems =
           itemsResp.data?.data?.map(item => {
             const attrs = item.attributes || {};
@@ -65,9 +64,8 @@ function Gallery() {
 
         setGalleryItems(formattedItems);
 
-        // Process gallery text (Single Type)
-        // Access the data directly as it is not in an array for a single type
-        const firstText = textResp.data?.data?.attributes;
+        // Access the first element of the array for Collection Type text content
+        const firstText = textResp.data?.data?.[0]?.attributes;
         if (firstText) {
           setPageContent({
             title: firstText.Title || 'My Gallery',
