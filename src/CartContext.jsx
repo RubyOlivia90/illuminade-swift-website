@@ -1,41 +1,46 @@
-// inside CartContext.jsx
+// src/CartContext.jsx
+import React, { createContext, useContext, useState } from 'react';
 
-const handleCheckout = async (customerDetails) => {
-  try {
-    if (cartItems.length === 0) {
-      console.error("No items in cart");
-      return;
-    }
+const CartContext = createContext();
 
-    const firstItem = cartItems[0]; // since you’re selling single gallery pieces
-    const successUrl = `${window.location.origin}/download?title=${encodeURIComponent(
-      firstItem.title
-    )}&imageUrl=${encodeURIComponent(firstItem.imageUrl)}`;
-    const cancelUrl = `${window.location.origin}/checkout`;
+export function CartProvider({ children }) {
+  const [cartItems, setCartItems] = useState([]);
 
-    const response = await fetch(
-      `${import.meta.env.VITE_STRAPI_API_URL}/api/orders`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cartItems,
-          customerDetails,
-          successUrl,
-          cancelUrl,
-        }),
-      }
-    );
+  // ✅ Add item to cart
+  const addToCart = (item) => {
+    setCartItems((prev) => {
+      // Optional: prevent duplicates
+      const exists = prev.find((i) => i.id === item.id);
+      if (exists) return prev;
+      return [...prev, item];
+    });
+  };
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || "Stripe session creation failed");
-    }
+  // ✅ Remove item from cart
+  const removeFromCart = (id) => {
+    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  };
 
-    // Redirect to Stripe Checkout
-    const stripe = window.Stripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
-    await stripe.redirectToCheckout({ sessionId: data.id });
-  } catch (error) {
-    console.error("Error creating Stripe session:", error);
-  }
-};
+  // ✅ Clear cart after checkout or manually
+  const clearCart = () => {
+    setCartItems([]);
+  };
+
+  return (
+    <CartContext.Provider
+      value={{
+        cartItems,
+        addToCart,
+        removeFromCart,
+        clearCart,
+      }}
+    >
+      {children}
+    </CartContext.Provider>
+  );
+}
+
+// ✅ Custom hook for consuming the cart context
+export function useCart() {
+  return useContext(CartContext);
+}
