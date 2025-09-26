@@ -6,11 +6,10 @@ module.exports = [
     config: {
       headers: ['Content-Type', 'Authorization', 'Accept', 'Origin'],
       origin: [
-        'http://localhost:1337', // For local development
-        'http://localhost:5173', // For local development with Vite
-        process.env.CORS_ORIGIN, // For your deployed frontend
+        'http://localhost:1337',      // Local Strapi dev
+        'http://localhost:5173',      // Local frontend (Vite)
+        'https://illuminade-swift.onrender.com', // Your deployed frontend
       ],
-     
     },
   },
   'strapi::poweredBy',
