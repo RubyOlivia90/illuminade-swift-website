@@ -26,7 +26,8 @@ function Gallery() {
       try {
         const [itemsResp, textResp] = await Promise.all([
           axios.get(`${STRAPI_API_URL}/api/gallery-items?populate=*`),
-          axios.get(`${STRAPI_API_URL}/api/gallery-texts`)
+          // FIX: Changed 'gallery-texts' to the plural 'gallery-texts'
+          axios.get(`${STRAPI_API_URL}/api/gallery-texts?populate=*`)
         ]);
 
         const formattedItems =
