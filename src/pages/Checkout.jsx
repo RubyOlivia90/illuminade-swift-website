@@ -1,8 +1,8 @@
 import React, { useContext, useState, useEffect } from "react";
-import { CartContext } from "../CartContext";
+import { useCart } from "../CartContext";
 
 export default function Checkout() {
-  const { cartItems, handleCheckout, clearCart, calculateTotal } = useContext(CartContext);
+  const { cartItems, handleCheckout, clearCart, calculateTotal } = useCart();
 
   const [formData, setFormData] = useState({
     name: "",
