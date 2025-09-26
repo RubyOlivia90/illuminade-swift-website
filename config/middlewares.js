@@ -1,21 +1,50 @@
 module.exports = [
   'strapi::errors',
   {
+    name: 'strapi::security',
+    config: {
+      contentSecurityPolicy: {
+        useDefaults: true,
+        directives: {
+          // CRITICAL FIX: Whitelist your Cloudinary domain for image loading
+          'img-src': [
+            "'self'",
+            'data:',
+            'blob:',
+            'https://market-assets.strapi.io',
+            `https://res.cloudinary.com`, // Allow all Cloudinary resources
+          ],
+          // Also whitelist Cloudinary for media and frame loading if necessary
+          'media-src': [
+            "'self'",
+            'data:',
+            'blob:',
+            `https://res.cloudinary.com`,
+          ],
+          'frame-src': [
+            "'self'",
+            'data:',
+            'blob:',
+            `https://res.cloudinary.com`,
+          ],
+          upgradeInsecureRequests: null,
+        },
+      },
+    },
+  },
+  {
     name: 'strapi::cors',
     config: {
-      // Must be explicitly enabled
       enabled: true,
-      headers: '*', 
-      // Must include 'credentials: true' for modern APIs
+      headers: '*',
       credentials: true, 
-      // Allow all necessary HTTP methods
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
-      // CRITICAL: Must list all trusted origins
+      // Final universal origins to prevent CORS errors during dev/prod testing
       origin: [
         'http://localhost:1337', // Local Strapi dev
         'http://localhost:5173', // Local frontend (Vite)
-        'https://illuminade-swift.onrender.com', // Your deployed frontend (from error log)
-        'https://illuminade-swift-website.onrender.com', // Your deployed backend (for self-reference if needed)
+        'https://illuminade-swift.onrender.com', // Your deployed frontend
+        'https://illuminade-swift-website.onrender.com', // Your backend URL
       ],
     },
   },
