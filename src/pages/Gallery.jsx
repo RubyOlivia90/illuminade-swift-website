@@ -26,8 +26,8 @@ function Gallery() {
       try {
         const [itemsResp, textResp] = await Promise.all([
           axios.get(`${STRAPI_API_URL}/api/gallery-items?populate=*`),
-          // FIX: Changed 'gallery-texts' to the plural 'gallery-texts'
-          axios.get(`${STRAPI_API_URL}/api/gallery-texts?populate=*`)
+          // FIX: Changed 'gallery-texts' to the singular 'gallery-text'
+          axios.get(`${STRAPI_API_URL}/api/gallery-text`)
         ]);
 
         const formattedItems =
@@ -66,7 +66,7 @@ function Gallery() {
         setGalleryItems(formattedItems);
 
         // ✅ Handle text content
-        const firstText = textResp.data?.data?.[0]?.attributes;
+        const firstText = textResp.data?.data?.attributes;
         if (firstText) {
           setPageContent({
             title: firstText.Title || 'My Gallery',
