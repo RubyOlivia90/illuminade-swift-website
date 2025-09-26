@@ -1,15 +1,19 @@
+
 module.exports = [
   'strapi::errors',
   'strapi::security',
   {
     name: 'strapi::cors',
     config: {
-      headers: ['Content-Type', 'Authorization', 'Accept', 'Origin'],
+      enabled: true,
+      headers: '*',
       origin: [
-        'http://localhost:1337',      // Local Strapi dev
-        'http://localhost:5173',      // Local frontend (Vite)
-        'https://illuminade-swift.onrender.com', // Your deployed frontend
+        'https://illuminade-swift-website.onrender.com', // Your Deployed Frontend URL
+        'http://localhost:5173', // Vite Development URL
+        'http://localhost:1337', // Strapi Admin/API Development URL
       ],
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
     },
   },
   'strapi::poweredBy',

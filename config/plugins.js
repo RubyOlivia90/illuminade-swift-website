@@ -1,5 +1,5 @@
+// config/plugins.js
 module.exports = ({ env }) => ({
-  // Configure the email plugin (already present)
   email: {
     config: {
       provider: 'sendgrid',
@@ -13,7 +13,6 @@ module.exports = ({ env }) => ({
     },
   },
   
-  // ADD: Configure the upload plugin to use Cloudinary
   upload: {
     config: {
       provider: 'cloudinary',
@@ -22,6 +21,7 @@ module.exports = ({ env }) => ({
         api_key: env('CLOUDINARY_KEY'),
         api_secret: env('CLOUDINARY_SECRET'),
       },
+    
       actionOptions: {
         upload: {},
         uploadStream: {},
