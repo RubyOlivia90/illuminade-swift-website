@@ -22,15 +22,12 @@ function Gallery() {
     const fetchData = async () => {
       setLoading(true);
       setError(null);
+      let fetchError = null;
 
+      // 1. Fetch GALLERY ITEMS (Collection Type)
       try {
-        const [itemsResp, textResp] = await Promise.all([
-          // Correct plural endpoint for Collection Type
-          axios.get(`${STRAPI_API_URL}/api/gallery-items?populate=*`),
-          // Correct plural endpoint for Collection Type (confirmed by schema)
-          axios.get(`${STRAPI_API_URL}/api/gallery-texts?populate=*`)
-        ]);
-
+        const itemsResp = await axios.get(`${STRAPI_API_URL}/api/gallery-items?populate=*`);
+        
         const formattedItems =
           itemsResp.data?.data?.map(item => {
             const attrs = item.attributes || {};
@@ -41,11 +38,13 @@ function Gallery() {
 
             if (imgData) {
               if (Array.isArray(imgData) && imgData.length > 0) {
+                // Assuming Strapi v4/v5 format
                 imageUrl = imgData[0].attributes?.url || imageUrl;
               } else if (imgData.attributes?.url) {
                 imageUrl = imgData.attributes.url;
               }
-              if (!imageUrl.startsWith('http')) {
+              // Ensure image URL is complete
+              if (imageUrl && !imageUrl.startsWith('http')) {
                 imageUrl = `${STRAPI_API_URL}${imageUrl}`;
               }
             }
@@ -65,8 +64,18 @@ function Gallery() {
 
         setGalleryItems(formattedItems);
 
-        // Correctly access the first element of the array for Collection Type text content
-        const firstText = textResp.data?.data?.[0]?.attributes;
+      } catch (err) {
+        console.error('Gallery Items fetch failed:', err.response?.data || err.message);
+        fetchError = 'Failed to load gallery items.';
+      }
+
+      // 2. Fetch GALLERY TEXT (Collection Type, expecting one entry)
+      try {
+        // Use plural endpoint and expect an array with one item (Collection Type)
+        const textResp = await axios.get(`${STRAPI_API_URL}/api/gallery-texts?populate=*`);
+        
+        // Access the first element of the array for the content
+        const firstText = textResp.data?.data?.[0]?.attributes; 
         if (firstText) {
           setPageContent({
             title: firstText.Title || 'My Gallery',
@@ -74,14 +83,13 @@ function Gallery() {
           });
         }
       } catch (err) {
-        console.error(
-          'Gallery fetch error:',
-          err.response?.data || err.message
-        );
-        setError('Failed to load gallery content. Check console for details.');
-      } finally {
-        setLoading(false);
+        console.error('Gallery Text fetch failed:', err.response?.data || err.message);
+        // Do not overwrite main error if items failed, but log it.
+        if (!fetchError) fetchError = 'Failed to load gallery header text.';
       }
+
+      setLoading(false);
+      if (fetchError) setError(fetchError);
     };
 
     fetchData();
@@ -113,6 +121,13 @@ function Gallery() {
             <button onClick={() => addToCart(item)}>Add to Cart</button>
           </div>
         ))}
+        
+        {/* Fallback Message if items list is empty but no global error */}
+        {galleryItems.length === 0 && !loading && !error && (
+            <p style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#ccc' }}>
+                No gallery items found. Please add content in Strapi.
+            </p>
+        )}
       </section>
     </div>
   );
