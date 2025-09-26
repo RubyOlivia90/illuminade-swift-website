@@ -29,42 +29,54 @@ function Gallery() {
           axios.get(`${STRAPI_API_URL}/api/gallery-texts`)
         ]);
 
-        const formattedItems = itemsResp.data?.data?.map(item => {
-          // Handle single or multiple images
-          let imageUrl = 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image';
-          if (item.Image) {
-            if (Array.isArray(item.Image) && item.Image.length > 0) {
-              imageUrl = item.Image[0]?.url || imageUrl;
-            } else if (item.Image.url) {
-              imageUrl = item.Image.url;
-            }
-            if (!imageUrl.startsWith('http')) {
-              imageUrl = `${STRAPI_API_URL}${imageUrl}`;
-            }
-          }
+        const formattedItems =
+          itemsResp.data?.data?.map(item => {
+            const attrs = item.attributes || {};
 
-          return {
-            id: item.id,
-            title: item.Title || 'Untitled Photo',
-            description: item.Description || 'No description provided.',
-            price: item.Price != null ? parseFloat(item.Price).toFixed(2) : 'N/A',
-            stripeProductId: item.StripeProductID || 'N/A',
-            imageUrl,
-          };
-        }) || [];
+            // ✅ Handle Strapi v4/v5 image format
+            let imageUrl =
+              'https://placehold.co/600x400/CCCCCC/333333?text=No+Image';
+            const imgData = attrs.Image?.data;
+
+            if (imgData) {
+              if (Array.isArray(imgData) && imgData.length > 0) {
+                imageUrl = imgData[0].attributes?.url || imageUrl;
+              } else if (imgData.attributes?.url) {
+                imageUrl = imgData.attributes.url;
+              }
+              if (!imageUrl.startsWith('http')) {
+                imageUrl = `${STRAPI_API_URL}${imageUrl}`;
+              }
+            }
+
+            return {
+              id: item.id,
+              title: attrs.Title || 'Untitled Photo',
+              description: attrs.Description || 'No description provided.',
+              price:
+                attrs.Price != null
+                  ? parseFloat(attrs.Price).toFixed(2)
+                  : 'N/A',
+              stripeProductId: attrs.StripeProductID || 'N/A',
+              imageUrl,
+            };
+          }) || [];
 
         setGalleryItems(formattedItems);
 
-        const firstText = textResp.data?.data?.[0];
+        // ✅ Handle text content
+        const firstText = textResp.data?.data?.[0]?.attributes;
         if (firstText) {
           setPageContent({
             title: firstText.Title || 'My Gallery',
             body: firstText.Body || 'Add your gallery page description in Strapi.',
           });
         }
-
       } catch (err) {
-        console.error('Gallery fetch error:', err.response?.data || err.message);
+        console.error(
+          'Gallery fetch error:',
+          err.response?.data || err.message
+        );
         setError('Failed to load gallery content. Check console for details.');
       } finally {
         setLoading(false);

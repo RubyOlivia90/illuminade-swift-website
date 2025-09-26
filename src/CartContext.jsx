@@ -1,121 +1,41 @@
-import React, { createContext, useState, useEffect, useCallback, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // Make sure this is imported
+// inside CartContext.jsx
 
-export const CartContext = createContext();
-export const useCart = () => useContext(CartContext);
-
-export const CartProvider = ({ children }) => {
-  const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState(() => {
-    try {
-      const stored = localStorage.getItem('cartItems');
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('cartItems', JSON.stringify(cartItems));
-    } catch (err) {
-      console.error('Failed to save cart to localStorage:', err);
-    }
-  }, [cartItems]);
-
-  const addToCart = useCallback((product) => {
-    setCartItems((prev) => {
-      const exists = prev.find((item) => item.id === product.id);
-      const price = product.price != null ? parseFloat(product.price) : 0;
-      if (exists) {
-        return prev.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      } else {
-        return [...prev, { ...product, quantity: 1, price }];
-      }
-    });
-  }, []);
-
-  const updateQuantity = useCallback((id, change) => {
-    setCartItems((prev) =>
-      prev
-        .map((item) =>
-          item.id === id
-            ? { ...item, quantity: Math.max(1, item.quantity + change) }
-            : item
-        )
-        .filter((item) => item.quantity > 0)
-    );
-  }, []);
-
-  const removeFromCart = useCallback((id) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
-  }, []);
-
-  const clearCart = useCallback(() => setCartItems([]), []);
-
-  const calculateTotal = useCallback(() => {
-    return cartItems
-      .reduce((total, item) => total + (item.price || 0) * item.quantity, 0)
-      .toFixed(2);
-  }, [cartItems]);
-
-  const getItemQuantity = useCallback(
-    (id) => cartItems.find((item) => item.id === id)?.quantity || 0,
-    [cartItems]
-  );
-
-  const getTotalItems = useCallback(
-    () => cartItems.reduce((total, item) => total + item.quantity, 0),
-    [cartItems]
-  );
-
-  const handleCheckout = async (customerDetails) => {
-    if (!cartItems.length) {
-      alert('Cart is empty!');
+const handleCheckout = async (customerDetails) => {
+  try {
+    if (cartItems.length === 0) {
+      console.error("No items in cart");
       return;
     }
 
-    const requiredFields = ['name', 'email', 'phone', 'address', 'city', 'state', 'zip'];
-    for (let field of requiredFields) {
-      if (!customerDetails?.[field]) {
-        alert(`Please fill in ${field}`);
-        return;
+    const firstItem = cartItems[0]; // since you’re selling single gallery pieces
+    const successUrl = `${window.location.origin}/download?title=${encodeURIComponent(
+      firstItem.title
+    )}&imageUrl=${encodeURIComponent(firstItem.imageUrl)}`;
+    const cancelUrl = `${window.location.origin}/checkout`;
+
+    const response = await fetch(
+      `${import.meta.env.VITE_STRAPI_API_URL}/api/orders`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cartItems,
+          customerDetails,
+          successUrl,
+          cancelUrl,
+        }),
       }
+    );
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || "Stripe session creation failed");
     }
-    
-    // Redirect to Stripe checkout
-    try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_STRAPI_API_URL}/api/orders`,
-        { cartItems, customerDetails },
-        { headers: { 'Content-Type': 'application/json' } }
-      );
 
-      if (response.data.url) {
-        window.location.href = response.data.url;
-      }
-    } catch (err) {
-      console.error("Error creating Stripe session:", err);
-      alert("Checkout failed. Please try again.");
-    }
-  };
-
-  const value = {
-    cartItems,
-    addToCart,
-    updateQuantity,
-    removeFromCart,
-    clearCart,
-    calculateTotal,
-    getItemQuantity,
-    getTotalItems,
-    handleCheckout
-  };
-
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+    // Redirect to Stripe Checkout
+    const stripe = window.Stripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+    await stripe.redirectToCheckout({ sessionId: data.id });
+  } catch (error) {
+    console.error("Error creating Stripe session:", error);
+  }
 };

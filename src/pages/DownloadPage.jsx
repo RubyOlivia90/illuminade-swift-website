@@ -1,40 +1,49 @@
-import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 
 const DownloadPage = () => {
-  const location = useLocation();
-  const { imageUrl, title } = location.state || {};
+  const [params] = useSearchParams();
+  const imageUrl = params.get("imageUrl");
+  const title = params.get("title");
 
-  if (!imageUrl) {
+  useEffect(() => {
+    if (imageUrl) {
+      // trigger download automatically
+      const link = document.createElement("a");
+      link.href = imageUrl;
+      link.download = title ? `${title}.jpg` : "download.jpg";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }, [imageUrl, title]);
+
+  if (!imageUrl || !title) {
     return (
-      <div className="download-page-container" style={{ textAlign: 'center', marginTop: '5rem', color: '#f5f5f5' }}>
-        <h2>Invalid Download Link</h2>
-        <p>Please return to the store or contact support.</p>
+      <div className="p-8 text-center">
+        <h1 className="text-xl font-bold">Invalid download link</h1>
+        <p>Please contact support if this issue persists.</p>
       </div>
     );
   }
 
   return (
-    <div className="download-page-container" style={{ textAlign: 'center', marginTop: '5rem', color: '#f5f5f5' }}>
-      <h2>Thank you for your purchase!</h2>
-      <p>Your download is ready. Click the button below to save your file.</p>
-      <a href={imageUrl} download={title} style={downloadButtonStyles}>
-        Download {title}
-      </a>
+    <div className="p-8 text-center">
+      <h1 className="text-2xl font-bold mb-4">Thank you for your purchase!</h1>
+      <p>Your download should begin automatically.</p>
+      <p>
+        If it doesn’t,{" "}
+        <a
+          href={imageUrl}
+          download={`${title}.jpg`}
+          className="text-blue-500 underline"
+        >
+          click here
+        </a>
+        .
+      </p>
     </div>
   );
-};
-
-const downloadButtonStyles = {
-  display: 'inline-block',
-  padding: '1rem 2rem',
-  backgroundColor: '#a8e6cf',
-  color: '#1a1a1a',
-  textDecoration: 'none',
-  fontWeight: 'bold',
-  borderRadius: '5px',
-  marginTop: '2rem',
-  fontSize: '1rem'
 };
 
 export default DownloadPage;
