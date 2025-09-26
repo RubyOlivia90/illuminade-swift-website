@@ -25,8 +25,9 @@ function Gallery() {
 
       try {
         const [itemsResp, textResp] = await Promise.all([
+          // Correct plural endpoint for Collection Type
           axios.get(`${STRAPI_API_URL}/api/gallery-items?populate=*`),
-          // CORRECT: Use plural endpoint for the Collection Type: /api/gallery-texts
+          // Correct plural endpoint for Collection Type (confirmed by schema)
           axios.get(`${STRAPI_API_URL}/api/gallery-texts?populate=*`)
         ]);
 
@@ -64,7 +65,7 @@ function Gallery() {
 
         setGalleryItems(formattedItems);
 
-        // Access the first element of the array for Collection Type text content
+        // Correctly access the first element of the array for Collection Type text content
         const firstText = textResp.data?.data?.[0]?.attributes;
         if (firstText) {
           setPageContent({
