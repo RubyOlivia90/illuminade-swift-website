@@ -24,11 +24,13 @@ function Gallery() {
       setError(null);
 
       try {
+        // Fetch both gallery items and text in parallel
         const [itemsResp, textResp] = await Promise.all([
           axios.get(`${STRAPI_API_URL}/api/gallery-items?populate=*`),
-          axios.get(`${STRAPI_API_URL}/api/gallery-text`)
+          axios.get(`${STRAPI_API_URL}/api/gallery-texts?populate=*`)
         ]);
 
+        // Process gallery items (Collection Type)
         const formattedItems =
           itemsResp.data?.data?.map(item => {
             const attrs = item.attributes || {};
@@ -63,7 +65,8 @@ function Gallery() {
 
         setGalleryItems(formattedItems);
 
-        // FIX: Changed data access path for single type content
+        // Process gallery text (Single Type)
+        // Access the data directly as it is not in an array for a single type
         const firstText = textResp.data?.data?.attributes;
         if (firstText) {
           setPageContent({
