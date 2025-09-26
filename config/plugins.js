@@ -1,19 +1,13 @@
 module.exports = ({ env }) => ({
- 
   email: {
     config: {
-      provider: 'nodemailer', 
+      provider: 'sendgrid',
       providerOptions: {
-        host: env('BREVO_SMTP_HOST', 'smtp-relay.brevo.com'),
-        port: env('BREVO_SMTP_PORT', 587),
-        auth: {
-          user: env('BREVO_SMTP_USER'), 
-          pass: env('BREVO_SMTP_PASS'), 
-        },
+        apiKey: env('SENDGRID_API_KEY'),
       },
       settings: {
-        defaultFrom: env('BREVO_SENDER_EMAIL'), 
-        defaultReplyTo: env('BREVO_SENDER_EMAIL'),
+        defaultFrom: env('SENDGRID_DEFAULT_FROM', 'info.iluminade@gmail.com'),
+        defaultReplyTo: env('SENDGRID_DEFAULT_REPLY_TO', 'info.iluminade@gmail.com'),
       },
     },
   },
