@@ -16,27 +16,20 @@ function Home() {
       return;
     }
 
-    const fetchContent = async () => {
+    const fetchContent = async () => { // Corrected syntax here
       setLoading(true);
       setError(null);
 
       try {
         const response = await axios.get(`${STRAPI_API_URL}/api/home-page-contents?populate=*`);
         
-        // Let's log the exact object we are working with
-        console.log('--- DEBUG: Home Page Data Received ---');
-        console.log(response.data);
-
-        const firstEntry = response.data?.data?.[0];
-
-        // This is the most important log. Please expand this in your console.
-        console.log('--- DEBUG: First Entry for Home Page ---');
-        console.log(firstEntry);
+        // This is the key fix: We access the data directly, without ".attributes"
+        const homeContent = response.data?.data?.[0];
         
-        if (firstEntry && firstEntry.attributes) {
-          setContent(firstEntry.attributes);
+        if (homeContent) {
+          setContent(homeContent);
         } else {
-          setError('Data received, but in an unexpected format. Please check the console logs.');
+          setError('No homepage content found. Please check if the entry is published in Strapi.');
         }
       } catch (e) {
         console.error("Error fetching homepage data:", e);
@@ -51,9 +44,10 @@ function Home() {
 
   if (loading) return <p>Loading homepage content...</p>;
   if (error) return <p style={{ color: 'red' }}>Error: {error}</p>;
-  if (!content) return <p>No homepage content was set. Please check console.</p>;
+  if (!content) return <p>No homepage content found.</p>;
 
-  const heroImageUrl = content.HeroImage?.data?.attributes?.url || '';
+  // Access the image url from the flattened structure
+  const heroImageUrl = content.HeroImage?.url || '';
 
   return (
     <div className="home-page-wrapper">
@@ -66,6 +60,7 @@ function Home() {
           <div className="hero-subtitle">{content.HeroText}</div>
         </div>
       </header>
+
       <section 
         className="home-container about-section" 
         style={{ marginTop: '2rem', textAlign: 'center' }}
