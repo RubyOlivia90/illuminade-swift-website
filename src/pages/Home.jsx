@@ -46,7 +46,7 @@ function Home() {
   if (error) return <p style={{ color: 'red' }}>Error: {error}</p>;
   if (!content) return <p>No homepage content found.</p>;
 
-  // This correctly gets the direct URL from Cloudinary
+  // This correctly gets the direct URL from the populated HeroImage field
   const heroImageUrl = content.HeroImage?.data?.attributes?.url || '';
 
   return (
