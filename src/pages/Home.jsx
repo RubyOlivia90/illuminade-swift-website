@@ -23,13 +23,13 @@ function Home() {
       try {
         const response = await axios.get(`${STRAPI_API_URL}/api/home-page-contents?populate=*`);
         
-        // This is the key fix: access the .attributes property
-        const firstEntry = response.data?.data?.[0]?.attributes;
+        // This is the key fix: We need to access the .attributes property from the first item in the data array.
+        const firstEntryAttributes = response.data?.data?.[0]?.attributes;
         
-        if (firstEntry) {
-          setContent(firstEntry);
+        if (firstEntryAttributes) {
+          setContent(firstEntryAttributes);
         } else {
-          setError('No homepage content found. Please check if the entry is published in Strapi.');
+          setError('No homepage content found. Please ensure the entry is published in Strapi.');
         }
       } catch (e) {
         console.error("Error fetching homepage data:", e);
@@ -46,7 +46,7 @@ function Home() {
   if (error) return <p style={{ color: 'red' }}>Error: {error}</p>;
   if (!content) return <p>No homepage content found.</p>;
 
-  // This correctly gets the direct URL from Cloudinary
+  // This correctly gets the direct URL from the populated HeroImage field
   const heroImageUrl = content.HeroImage?.data?.attributes?.url || '';
 
   return (

@@ -30,6 +30,7 @@ function Gallery() {
         const formattedItems =
           itemsResp.data?.data?.map(item => {
             const attrs = item.attributes || {};
+            // Correctly access the image URL from a single media field
             const imageUrl = attrs.Image?.data?.attributes?.url || 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image';
 
             return {
