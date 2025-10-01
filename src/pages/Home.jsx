@@ -23,13 +23,13 @@ function Home() {
       try {
         const response = await axios.get(`${STRAPI_API_URL}/api/home-page-contents?populate=*`);
         
-        // This is the key fix: We need to access the .attributes property.
-        const firstEntryAttributes = response.data?.data?.[0]?.attributes;
+        // This is the key fix: Use the data directly without accessing .attributes
+        const homeContent = response.data?.data?.[0]?.attributes;
         
-        if (firstEntryAttributes) {
-          setContent(firstEntryAttributes);
+        if (homeContent) {
+          setContent(homeContent);
         } else {
-          setError('No homepage content found. Please check if the entry is published in Strapi.');
+          setError('No homepage content found.');
         }
       } catch (e) {
         console.error("Error fetching homepage data:", e);
