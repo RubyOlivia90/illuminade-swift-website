@@ -26,12 +26,10 @@ function Gallery() {
 
       try {
         const itemsResp = await axios.get(`${STRAPI_API_URL}/api/gallery-items?populate=*`);
-        console.log('Raw Gallery Items Data:', itemsResp.data); // For debugging
-
+        
         const formattedItems =
           itemsResp.data?.data?.map(item => {
             const attrs = item.attributes || {};
-            // Correctly access the image URL from a single media field
             const imageUrl = attrs.Image?.data?.attributes?.url || 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image';
 
             return {
@@ -56,8 +54,6 @@ function Gallery() {
 
       try {
         const textResp = await axios.get(`${STRAPI_API_URL}/api/gallery-texts?populate=*`);
-        console.log('Raw Gallery Text Data:', textResp.data); // For debugging
-        
         const firstText = textResp.data?.data?.[0]?.attributes; 
         if (firstText) {
           setPageContent({
