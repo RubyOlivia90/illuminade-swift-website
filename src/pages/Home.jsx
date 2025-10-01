@@ -22,10 +22,10 @@ function Home() {
 
       try {
         const response = await axios.get(`${STRAPI_API_URL}/api/home-page-contents?populate=*`);
-
         const firstEntry = response.data?.data?.[0];
-        if (firstEntry) {
-          setContent(firstEntry.attributes); 
+
+        if (firstEntry && firstEntry.attributes) {
+          setContent(firstEntry.attributes);
         } else {
           setError('No homepage content found or published in Strapi.');
         }
@@ -44,8 +44,7 @@ function Home() {
   if (error) return <p style={{ color: 'red' }}>Error: {error}</p>;
   if (!content) return <p>No homepage content found.</p>;
 
-  // THIS IS THE FIX: REMOVED THE STRAPI_API_URL PREFIX
-  const heroImageUrl = content.HeroImage?.data?.[0]?.attributes?.formats?.large?.url || '';
+  const heroImageUrl = content.HeroImage?.data?.attributes?.url || '';
 
   return (
     <div className="home-page-wrapper">
@@ -61,7 +60,7 @@ function Home() {
 
       <section 
         className="home-container about-section" 
-        style={{ marginTop: '2rem', textAlign: 'center' }} // Added inline style to center text
+        style={{ marginTop: '2rem', textAlign: 'center' }}
       >
         <h2>About Me</h2>
         {content.About ? (

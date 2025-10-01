@@ -24,26 +24,13 @@ function Gallery() {
       setError(null);
       let fetchError = null;
 
-      // 1. Fetch GALLERY ITEMS (Collection Type)
       try {
         const itemsResp = await axios.get(`${STRAPI_API_URL}/api/gallery-items?populate=*`);
         
         const formattedItems =
           itemsResp.data?.data?.map(item => {
             const attrs = item.attributes || {};
-
-            let imageUrl =
-              'https://placehold.co/600x400/CCCCCC/333333?text=No+Image';
-            const imgData = attrs.Image?.data;
-
-            if (imgData) {
-              if (Array.isArray(imgData) && imgData.length > 0) {
-                // Assuming Strapi v4/v5 format
-                imageUrl = imgData[0].attributes?.url || imageUrl;
-              } else if (imgData.attributes?.url) {
-                imageUrl = imgData.attributes.url;
-              }
-            }
+            const imageUrl = attrs.Image?.data?.attributes?.url || 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image';
 
             return {
               id: item.id,
@@ -65,12 +52,8 @@ function Gallery() {
         fetchError = 'Failed to load gallery items.';
       }
 
-      // 2. Fetch GALLERY TEXT (Collection Type, expecting one entry)
       try {
-        // Use plural endpoint and expect an array with one item (Collection Type)
         const textResp = await axios.get(`${STRAPI_API_URL}/api/gallery-texts?populate=*`);
-        
-        // Access the first element of the array for the content
         const firstText = textResp.data?.data?.[0]?.attributes; 
         if (firstText) {
           setPageContent({
@@ -80,7 +63,6 @@ function Gallery() {
         }
       } catch (err) {
         console.error('Gallery Text fetch failed:', err.response?.data || err.message);
-        // Do not overwrite main error if items failed, but log it.
         if (!fetchError) fetchError = 'Failed to load gallery header text.';
       }
 
@@ -96,7 +78,6 @@ function Gallery() {
 
   return (
     <div className="gallery-page-container">
-      {/* Gallery Page Title & Body */}
       {pageContent && (
         <section className="gallery-header">
           <h1 className="gallery-title">{pageContent.title}</h1>
@@ -106,7 +87,6 @@ function Gallery() {
         </section>
       )}
 
-      {/* Gallery Grid */}
       <section className="gallery-grid">
         {galleryItems.map(item => (
           <div className="gallery-card" key={item.id}>
@@ -118,7 +98,6 @@ function Gallery() {
           </div>
         ))}
         
-        {/* Fallback Message if items list is empty but no global error */}
         {galleryItems.length === 0 && !loading && !error && (
             <p style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#ccc' }}>
                 No gallery items found. Please add content in Strapi.
