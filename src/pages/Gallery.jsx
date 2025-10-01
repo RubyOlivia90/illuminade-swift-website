@@ -43,10 +43,6 @@ function Gallery() {
               } else if (imgData.attributes?.url) {
                 imageUrl = imgData.attributes.url;
               }
-              // Ensure image URL is complete
-              if (imageUrl && !imageUrl.startsWith('http')) {
-                imageUrl = `${STRAPI_API_URL}${imageUrl}`;
-              }
             }
 
             return {
