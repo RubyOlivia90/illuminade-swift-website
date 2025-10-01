@@ -1,0 +1,22 @@
+/* /index.html    200
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Redirecting...</title>
+  <script>
+    (function() {
+      const queryString = window.location.search;
+      
+     
+      const basePath = window.location.origin;
+      
+      const newUrl = basePath + '/#/' + 'download' + queryString;
+      
+      window.location.replace(newUrl);
+    })();
+  </script>
+</head>
+<body>
+  <p>If you are not redirected automatically, please wait a moment.</p>
+</body>
+</html>
