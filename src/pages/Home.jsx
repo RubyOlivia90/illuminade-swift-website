@@ -23,13 +23,20 @@ function Home() {
       try {
         const response = await axios.get(`${STRAPI_API_URL}/api/home-page-contents?populate=*`);
         
-        // This is the key fix: Use the data directly without accessing .attributes
-        const homeContent = response.data?.data?.[0]?.attributes;
+        // Let's log the exact object we are working with
+        console.log('--- DEBUG: Home Page Data Received ---');
+        console.log(response.data);
+
+        const firstEntry = response.data?.data?.[0];
+
+        // This is the most important log. Please expand this in your console.
+        console.log('--- DEBUG: First Entry for Home Page ---');
+        console.log(firstEntry);
         
-        if (homeContent) {
-          setContent(homeContent);
+        if (firstEntry && firstEntry.attributes) {
+          setContent(firstEntry.attributes);
         } else {
-          setError('No homepage content found.');
+          setError('Data received, but in an unexpected format. Please check the console logs.');
         }
       } catch (e) {
         console.error("Error fetching homepage data:", e);
@@ -44,9 +51,8 @@ function Home() {
 
   if (loading) return <p>Loading homepage content...</p>;
   if (error) return <p style={{ color: 'red' }}>Error: {error}</p>;
-  if (!content) return <p>No homepage content found.</p>;
+  if (!content) return <p>No homepage content was set. Please check console.</p>;
 
-  // This correctly gets the direct URL from the populated HeroImage field
   const heroImageUrl = content.HeroImage?.data?.attributes?.url || '';
 
   return (
@@ -60,7 +66,6 @@ function Home() {
           <div className="hero-subtitle">{content.HeroText}</div>
         </div>
       </header>
-
       <section 
         className="home-container about-section" 
         style={{ marginTop: '2rem', textAlign: 'center' }}

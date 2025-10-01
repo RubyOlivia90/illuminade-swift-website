@@ -27,29 +27,33 @@ function Gallery() {
       try {
         const itemsResp = await axios.get(`${STRAPI_API_URL}/api/gallery-items?populate=*`);
         
+        console.log('--- DEBUG: Gallery Items Data Received ---');
+        console.log(itemsResp.data);
+
         const formattedItems =
           itemsResp.data?.data?.map(item => {
+            console.log('--- DEBUG: Single Gallery Item ---', item); // Log each item
             const attrs = item.attributes || {};
-            // Correctly access the image URL from a single media field
             const imageUrl = attrs.Image?.data?.attributes?.url || 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image';
 
             return {
               id: item.id,
               title: attrs.Title || 'Untitled Photo',
               description: attrs.Description || 'No description provided.',
-              price:
-                attrs.Price != null
-                  ? parseFloat(attrs.Price).toFixed(2)
-                  : 'N/A',
+              price: attrs.Price != null ? parseFloat(attrs.Price).toFixed(2) : 'N/A',
               stripeProductId: attrs.StripeProductID || 'N/A',
               imageUrl,
             };
           }) || [];
 
+        if (itemsResp.data?.data && formattedItems.length === 0) {
+            console.log("Gallery items were fetched but resulted in an empty array after formatting.");
+        }
+
         setGalleryItems(formattedItems);
 
       } catch (err) {
-        console.error('Gallery Items fetch failed:', err.response?.data || err.message);
+        console.error('Gallery Items fetch failed:', err);
         fetchError = 'Failed to load gallery items.';
       }
 
@@ -63,7 +67,7 @@ function Gallery() {
           });
         }
       } catch (err) {
-        console.error('Gallery Text fetch failed:', err.response?.data || err.message);
+        console.error('Gallery Text fetch failed:', err);
         if (!fetchError) fetchError = 'Failed to load gallery header text.';
       }
 
