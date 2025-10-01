@@ -22,15 +22,16 @@ function Home() {
 
       try {
         const response = await axios.get(`${STRAPI_API_URL}/api/home-page-contents?populate=*`);
-        const firstEntry = response.data?.data?.[0];
+        console.log('Raw Home Page Data:', response.data); // For debugging
 
+        const firstEntry = response.data?.data?.[0];
         if (firstEntry && firstEntry.attributes) {
           setContent(firstEntry.attributes);
         } else {
           setError('No homepage content found or published in Strapi.');
         }
       } catch (e) {
-        console.error(e);
+        console.error('Error fetching homepage data:', e);
         setError('Failed to fetch content. See console for details.');
       } finally {
         setLoading(false);
@@ -44,6 +45,7 @@ function Home() {
   if (error) return <p style={{ color: 'red' }}>Error: {error}</p>;
   if (!content) return <p>No homepage content found.</p>;
 
+  // Correctly access the image URL from Cloudinary (no prefix needed)
   const heroImageUrl = content.HeroImage?.data?.attributes?.url || '';
 
   return (
