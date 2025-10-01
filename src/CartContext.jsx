@@ -70,7 +70,7 @@ export function CartProvider({ children }) {
       const item = cartItems[0];
       const successUrl = `${window.location.origin}/download?imageUrl=${encodeURIComponent(item.imageUrl)}&title=${encodeURIComponent(item.title)}`;
 
-      // THIS IS THE FIX: The URL now matches your backend route exactly.
+      // This is the key fix: The URL now matches your backend route exactly.
       const response = await axios.post(`${import.meta.env.VITE_STRAPI_API_URL}/api/stripe/create-checkout-session`, {
         cartItems: cartItems,
         successUrl,
