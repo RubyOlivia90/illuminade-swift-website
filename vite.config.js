@@ -10,7 +10,7 @@ export default defineConfig(({ command }) => {
     // relative path resolution for static assets, which is often required 
     // for HashRouter apps on Render/static hosts.
     return {
-      base: '',
+      base: './',
       plugins: [react()],
     }
   } else {
