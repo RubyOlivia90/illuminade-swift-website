@@ -1,14 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
-import './index.css';
 import { CartProvider } from './CartContext';
-// This is the key change: Go back to HashRouter
 import { HashRouter as Router } from 'react-router-dom';
+import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    {/* Use the HashRouter here */}
     <Router>
       <CartProvider>
         <App />
