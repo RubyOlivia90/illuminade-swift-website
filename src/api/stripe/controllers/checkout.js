@@ -12,14 +12,13 @@ module.exports = {
 
     try {
       const item = cartItems[0];
-      // Create the query parameters for the redirect
       const params = new URLSearchParams({
           imageUrl: item.imageUrl,
           title: item.title
       }).toString();
 
-      // THIS IS THE FIX: Point the success_url to our new redirect page
-      const success_url = `${ctx.request.header.origin}/redirect.html?${params}`;
+      // THIS IS THE FIX: The filename now correctly points to redirects.html
+      const success_url = `${ctx.request.header.origin}/redirects.html?${params}`;
 
       const lineItems = cartItems.map(item => ({
         price_data: {
@@ -38,7 +37,7 @@ module.exports = {
         payment_method_types: ['card'],
         line_items: lineItems,
         mode: 'payment',
-        success_url: success_url, // Use our new redirect URL
+        success_url: success_url, // Use our updated redirect URL
         cancel_url: `${ctx.request.header.origin}/#/checkout`,
       });
 
