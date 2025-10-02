@@ -1,4 +1,3 @@
-/* /index.html    200
 <!DOCTYPE html>
 <html>
 <head>
@@ -6,17 +5,15 @@
   <script>
     (function() {
       const queryString = window.location.search;
-      
-     
       const basePath = window.location.origin;
-      
+      // This builds the correct URL: https://.../#/download?params...
       const newUrl = basePath + '/#/' + 'download' + queryString;
-      
+      // Immediately redirect to the correct hash-based URL
       window.location.replace(newUrl);
     })();
   </script>
 </head>
 <body>
-  <p>If you are not redirected automatically, please wait a moment.</p>
+  <p>Please wait while we redirect you...</p>
 </body>
 </html>
