@@ -6,11 +6,11 @@ export default defineConfig(({ command }) => {
   // This function makes the config conditional based on the command
   if (command === 'build') {
     // --- THIS IS THE FIX FOR PRODUCTION ---
-    // It forces Vite to use relative paths for all assets.
-    // This is the most robust way to ensure your deployed site
-    // can find its JS and CSS files, especially on mobile.
+    // FIX: Changing 'base: "./"' to 'base: ""' forces the most minimal 
+    // relative path resolution for static assets, which is often required 
+    // for HashRouter apps on Render/static hosts.
     return {
-      base: './',
+      base: '',
       plugins: [react()],
     }
   } else {
