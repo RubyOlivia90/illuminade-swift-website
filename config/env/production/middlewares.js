@@ -43,8 +43,8 @@ module.exports = [
       origin: [
         'http://localhost:1337', // Local Strapi dev
         'http://localhost:5173', // Local frontend (Vite)
-        'https://illuminade-swift.onrender.com', // Your deployed frontend
-        'https://illuminade-swift-website.onrender.com', // Your backend URL
+        'https://iluminade-swift.onrender.com', // Your deployed frontend
+        'https://iluminade-swift-website.onrender.com', // Your backend URL
       ],
     },
   },
