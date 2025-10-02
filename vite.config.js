@@ -1,20 +1,17 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
-  // This function makes the config conditional based on 'dev' or 'build'
   if (command === 'build') {
     // --- PRODUCTION BUILD CONFIG ---
-    // This is the key: It forces Vite to use relative paths for assets
-    // so your index.html can find the JS and CSS files.
+    // This is the new change. Using an empty string is an alternative
+    // way to ensure all asset paths are relative.
     return {
-      base: './',
+      base: '', 
       plugins: [react()],
     }
   } else {
     // --- LOCAL DEVELOPMENT CONFIG ---
-    // Your local server settings remain unchanged and will work as before.
     return {
       plugins: [react()],
       server: {
