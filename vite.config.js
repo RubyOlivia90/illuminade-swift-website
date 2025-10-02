@@ -3,15 +3,11 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig(({ command }) => {
   if (command === 'build') {
-    // --- PRODUCTION BUILD CONFIG ---
-    // This is the new change. Using an empty string is an alternative
-    // way to ensure all asset paths are relative.
     return {
-      base: '', 
+      base: './',   // <-- RELATIVE paths (works anywhere)
       plugins: [react()],
     }
   } else {
-    // --- LOCAL DEVELOPMENT CONFIG ---
     return {
       plugins: [react()],
       server: {
