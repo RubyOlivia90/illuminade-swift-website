@@ -27,7 +27,7 @@ const Footer = () => {
 
         <div className="footer-section footer-contact">
           <h3 className="footer-heading">Get in Touch</h3>
-          <p>Email: <a href="mailto:info@illuminade.com">iluminadeswiftproton.me@proton.me</a></p>
+          <p>Email: <a href="mailto:info@iluminade.com">iluminadeswiftproton.me@proton.me</a></p>
           <p>Location: Boston, MA</p>
         </div>
 
@@ -40,7 +40,7 @@ const Footer = () => {
         </div>
       </div>
       <div className="footer-bottom">
-        <p>&copy; {new Date().getFullYear()} Illuminade. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} Iluminade. All rights reserved.</p>
       </div>
     </footer>
   );
